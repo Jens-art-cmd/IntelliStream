@@ -4,12 +4,15 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
-    "start:dry": "DRY_RUN=true tsx src/index.ts"
+    "start:dry": "DRY_RUN=true tsx src/index.ts",
+    "start:embed": "tsx src/embedder.ts",
+    "start:embed:dry": "DRY_RUN=true tsx src/embedder.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "@intellistream/shared": "*",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "openai": "^6.42.0"
   },
   "devDependencies": {
     "tsx": "^4.19.0",
