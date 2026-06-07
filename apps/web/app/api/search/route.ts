@@ -26,12 +26,14 @@ async function getQueryEmbedding(text: string): Promise<number[] | null> {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const q            = searchParams.get("q")?.trim() ?? "";
-  const mode         = searchParams.get("mode") ?? "hybrid";
-  const limit        = Math.min(parseInt(searchParams.get("limit") ?? "20"), 50);
-  const offset       = parseInt(searchParams.get("offset") ?? "0");
-  const industryRaw  = searchParams.get("industry_ids");
-  const industryIds  = industryRaw ? industryRaw.split(",").map(Number).filter(Boolean) : null;
+  const q           = searchParams.get("q")?.trim() ?? "";
+  const mode        = searchParams.get("mode") ?? "hybrid";
+  const limit       = Math.min(parseInt(searchParams.get("limit") ?? "20"), 50);
+  const offset      = parseInt(searchParams.get("offset") ?? "0");
+  const industryRaw = searchParams.get("industry_ids");
+  const industryIds = industryRaw
+    ? industryRaw.split(",").map(Number).filter(Boolean)
+    : null;
 
   if (!q) return NextResponse.json({ results: [], query: "" });
 
@@ -49,12 +51,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: data ?? [], query: q, mode: "fulltext" });
   }
 
-  // Semantisch / Hybrid
+  // Semantisch / Hybrid — Embedding für Query generieren
   const embedding = await getQueryEmbedding(q);
 
   if (embedding) {
     const { data: semData, error: semError } = await supabase.rpc("search_articles", {
-      query_embedding: embedding as unknown as string,
+      query_embedding: embedding,
       industry_ids:    industryIds,
       match_threshold: 0.35,
       match_count:     limit,
@@ -69,10 +71,10 @@ export async function GET(request: NextRequest) {
           match_count:  limit,
           offset_count: 0,
         });
-        const seen   = new Set(semData.map((r: { id: string }) => r.id));
+        const seen   = new Set(semData.map((r) => r.id));
         const merged = [
           ...semData,
-          ...(ftData ?? []).filter((r: { id: string }) => !seen.has(r.id)),
+          ...(ftData ?? []).filter((r) => !seen.has(r.id)),
         ].slice(0, limit);
         return NextResponse.json({ results: merged, query: q, mode: "hybrid" });
       }
@@ -87,5 +89,9 @@ export async function GET(request: NextRequest) {
     match_count:  limit,
     offset_count: offset,
   });
-  return NextResponse.json({ results: ftFallback ?? [], query: q, mode: "fulltext_fallback" });
+  return NextResponse.json({
+    results: ftFallback ?? [],
+    query: q,
+    mode: "fulltext_fallback",
+  });
 }
