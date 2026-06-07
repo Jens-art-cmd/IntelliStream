@@ -6,7 +6,13 @@
     "start": "tsx src/index.ts",
     "start:dry": "DRY_RUN=true tsx src/index.ts",
     "start:finance": "tsx src/finance.ts",
-    "start:finance:dry": "DRY_RUN=true tsx src/finance.ts"
+    "start:finance:dry": "DRY_RUN=true tsx src/finance.ts",
+    "start:recht": "tsx src/recht.ts",
+    "start:recht:dry": "DRY_RUN=true tsx src/recht.ts",
+    "start:it": "tsx src/it.ts",
+    "start:it:dry": "DRY_RUN=true tsx src/it.ts",
+    "start:automotive": "tsx src/automotive.ts",
+    "start:automotive:dry": "DRY_RUN=true tsx src/automotive.ts"
   },
   "dependencies": {
     "@intellistream/shared": "*",
