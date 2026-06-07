@@ -9,7 +9,7 @@ jobs:
   processor:
     name: Artikel verarbeiten (Summary + Scoring)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 55
 
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
 
       - name: Processor — alle unverarbeiteten Artikel
         run: |
-          for i in $(seq 1 20); do
+          for i in $(seq 1 50); do
             echo "=== Batch $i ==="
             output=$(npm run start -w @intellistream/agents-processor 2>&1)
             echo "$output"
