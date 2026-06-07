@@ -25,10 +25,5 @@ export function createServerClient(accessToken?: string) {
   return client;
 }
 
-// Browser client (used in Next.js client components)
-export function createBrowserClient() {
-  const url = process.env["NEXT_PUBLIC_SUPABASE_URL"];
-  const key = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
-  if (!url || !key) throw new Error("NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY required");
-  return createClient<Database>(url, key);
-}
+// Browser client lives in apps/web/lib/supabase.ts (imports from @supabase/ssr)
+// Not part of the shared server-side client — agents must not load NEXT_PUBLIC_* env vars.
