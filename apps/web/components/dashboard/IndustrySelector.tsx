@@ -26,9 +26,9 @@ export default function IndustrySelector({
 }: Props) {
   const router = useRouter();
   const [selected, setSelected] = useState<number[]>(initialSelected);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [saving, setSaving]     = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [saved, setSaved]       = useState(false);
 
   function toggle(id: number) {
     setSelected((prev) =>
@@ -49,13 +49,8 @@ export default function IndustrySelector({
     setSaving(true);
     setError(null);
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setSaving(false);
-      return;
-    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSaving(false); return; }
 
     const { error: updateError } = await supabase
       .from("users")
@@ -63,62 +58,97 @@ export default function IndustrySelector({
       .eq("id", user.id);
 
     setSaving(false);
-    if (updateError) {
-      setError(updateError.message);
-      return;
-    }
+    if (updateError) { setError(updateError.message); return; }
 
     setSaved(true);
     router.push(redirectTo);
     router.refresh();
   }
 
-  return (
-    <div className="space-y-6">
-      {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+  const quota = selected.length;
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  return (
+    <div className="space-y-5">
+      {error && (
+        <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-medium rounded-md px-3 py-2">
+          {error}
+        </div>
+      )}
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {industries.map((industry) => {
           const isSelected = selected.includes(industry.id);
           const isDisabled = !isSelected && selected.length >= 5;
+
           return (
             <button
               key={industry.id}
               onClick={() => toggle(industry.id)}
               disabled={isDisabled}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
+              className={`text-left p-3.5 rounded-lg border-[1.5px] transition-all duration-150 flex items-start justify-between gap-3 ${
                 isSelected
-                  ? "border-brand-600 bg-brand-50 dark:bg-brand-900/20"
+                  ? "border-brand-500 bg-brand-50 shadow-[0_0_0_3px_theme(colors.brand.50)]"
                   : isDisabled
-                    ? "border-gray-200 dark:border-gray-800 opacity-40 cursor-not-allowed"
-                    : "border-gray-200 dark:border-gray-800 hover:border-brand-400 bg-white dark:bg-gray-900"
+                    ? "border-neutral-100 opacity-40 cursor-not-allowed bg-neutral-25"
+                    : "border-neutral-150 hover:border-brand-300 hover:shadow-sm bg-neutral-0"
               }`}
             >
-              <div className="flex items-start justify-between">
-                <span className="font-medium text-sm text-gray-900 dark:text-white">
+              <div className="min-w-0">
+                <span className="block text-xs font-semibold text-neutral-900 leading-snug">
                   {industry.name}
                 </span>
-                {isSelected && <span className="text-brand-600 text-lg">✓</span>}
+                {industry.description && (
+                  <span className="block mt-0.5 text-2xs text-neutral-500 line-clamp-2 leading-relaxed">
+                    {industry.description}
+                  </span>
+                )}
               </div>
-              {industry.description && (
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
-                  {industry.description}
-                </p>
-              )}
+
+              {/* Checkbox */}
+              <div
+                className={`w-4.5 h-4.5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 border text-2xs font-bold transition-all ${
+                  isSelected
+                    ? "bg-brand-600 border-brand-600 text-white"
+                    : "border-neutral-300 bg-neutral-0"
+                }`}
+                style={{ width: "18px", height: "18px" }}
+              >
+                {isSelected && "✓"}
+              </div>
             </button>
           );
         })}
       </div>
 
-      <div className="text-center">
-        <p className="text-sm text-gray-500 mb-4">{selected.length} / 5 Branchen ausgewählt</p>
-        <button
-          onClick={handleSave}
-          disabled={saving || selected.length === 0}
-          className="bg-brand-600 text-white px-10 py-3 rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50"
-        >
-          {saving ? "Speichere…" : saved ? "Gespeichert ✓" : saveLabel}
-        </button>
+      {/* Quota bar + save */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-1.5 bg-neutral-150 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-brand-500 rounded-full transition-all duration-300"
+              style={{ width: `${(quota / 5) * 100}%` }}
+            />
+          </div>
+          <span className="text-xs text-neutral-500 font-medium w-24 flex-shrink-0">
+            {quota} / 5 Branchen
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-neutral-400">
+            {quota === 0 && "Noch keine Branche ausgewählt"}
+            {quota === 5 && "Maximum erreicht"}
+            {quota > 0 && quota < 5 && `${5 - quota} weitere möglich`}
+          </span>
+          <button
+            onClick={handleSave}
+            disabled={saving || selected.length === 0}
+            className="bg-brand-600 text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-brand-700 disabled:opacity-50 transition-colors tracking-tight-sm"
+          >
+            {saving ? "Speichere…" : saved ? "Gespeichert ✓" : saveLabel}
+          </button>
+        </div>
       </div>
     </div>
   );

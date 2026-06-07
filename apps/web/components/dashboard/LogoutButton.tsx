@@ -16,9 +16,14 @@ export default function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-md text-xs font-medium text-neutral-500 hover:bg-red-50 hover:text-red-600 transition-colors mt-0.5"
     >
-      <span>↩</span><span>Abmelden</span>
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <polyline points="16 17 21 12 16 7" />
+        <line x1="21" y1="12" x2="9" y2="12" />
+      </svg>
+      Abmelden
     </button>
   );
 }

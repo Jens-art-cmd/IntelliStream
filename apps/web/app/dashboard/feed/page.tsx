@@ -22,17 +22,22 @@ export default async function FeedPage() {
 
   if (industryIds.length === 0) {
     return (
-      <div className="max-w-3xl mx-auto p-8 text-center">
-        <p className="text-gray-600 dark:text-gray-400 mb-4">Du hast noch keine Branchen abonniert.</p>
-        <Link href="/onboarding" className="text-brand-600 hover:underline font-medium">
+      <div className="max-w-2xl mx-auto px-6 py-16 text-center">
+        <div className="text-4xl mb-4">📡</div>
+        <h2 className="text-lg font-semibold text-neutral-800 mb-2">Noch keine Branchen ausgewählt</h2>
+        <p className="text-sm text-neutral-500 mb-6">
+          Wählen Sie bis zu 5 Branchen aus, um Ihren personalisierten Feed zu starten.
+        </p>
+        <Link
+          href="/onboarding"
+          className="inline-flex items-center gap-2 bg-brand-600 text-white text-sm font-semibold px-5 py-2.5 rounded-md hover:bg-brand-700 transition-colors"
+        >
           Jetzt Branchen auswählen →
         </Link>
       </div>
     );
   }
 
-  // Fetch top N articles per industry in parallel, then merge by date.
-  // This ensures every subscribed industry is represented regardless of publish date.
   const [industriesResult, ...articleResults] = await Promise.all([
     supabase.from("industries").select("id, name").in("id", industryIds),
     ...industryIds.map((id) =>
@@ -47,8 +52,6 @@ export default async function FeedPage() {
   ]);
 
   const industries = industriesResult.data ?? [];
-
-  // Merge all per-industry results and re-sort by published_at descending
   const articles = articleResults
     .flatMap((r) => r.data ?? [])
     .sort((a, b) => {
@@ -60,23 +63,35 @@ export default async function FeedPage() {
   const industryNames = industries.map((i) => i.name);
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mein Feed</h1>
-        <Link href="/dashboard/settings" className="text-xs text-gray-500 hover:text-brand-600 transition-colors">
-          Branchen ändern ⚙
+    <div className="max-w-3xl mx-auto px-6 py-6">
+
+      {/* Page header */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-xl font-bold tracking-tighter-md text-neutral-900">Mein Feed</h1>
+          <p className="text-xs text-neutral-400 mt-0.5">{industryNames.join(" · ")}</p>
+        </div>
+        <Link
+          href="/dashboard/settings"
+          className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+        >
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Branchen
         </Link>
       </div>
 
       {articles.length === 0 ? (
-        <div className="text-center py-16 space-y-4">
+        <div className="text-center py-16 space-y-3">
           <div className="text-4xl">📡</div>
-          <p className="text-gray-700 dark:text-gray-300 font-medium">Noch keine Artikel für deine Branchen</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-            Du beobachtest: <strong>{industryNames.join(", ")}</strong>.
-            Die Agenten laufen stündlich und befüllen deinen Feed automatisch.
+          <h3 className="text-sm font-semibold text-neutral-700">Noch keine Artikel vorhanden</h3>
+          <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+            Sie beobachten: <span className="font-medium text-neutral-700">{industryNames.join(", ")}</span>.
+            Die Agenten laufen stündlich und befüllen Ihren Feed automatisch.
           </p>
-          <Link href="/dashboard/settings" className="inline-block mt-2 text-sm text-brand-600 hover:underline">
+          <Link href="/dashboard/settings" className="inline-block text-xs text-brand-600 font-medium hover:underline">
             Andere Branchen wählen →
           </Link>
         </div>
