@@ -29,11 +29,11 @@ interface Props {
   industries: Industry[];
 }
 
-const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; dot?: string }[] = [
+const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; color?: string }[] = [
   { value: "all",    label: "Alle" },
-  { value: "high",   label: "Hoch",   dot: "bg-red-500" },
-  { value: "medium", label: "Mittel", dot: "bg-amber-500" },
-  { value: "low",    label: "Gering", dot: "bg-green-500" },
+  { value: "high",   label: "Hoch",    color: "#ef4444" },
+  { value: "medium", label: "Mittel",  color: "#f59e0b" },
+  { value: "low",    label: "Gering",  color: "#22c55e" },
 ];
 
 export default function FeedClient({ articles, industries }: Props) {
@@ -54,47 +54,52 @@ export default function FeedClient({ articles, industries }: Props) {
   }, [articles, impact, industry]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
 
       {/* ── Filter bar ──────────────────────────────────── */}
-      <div className="space-y-2.5">
+      <div className="bg-white border border-neutral-100 rounded-xl px-4 py-3.5 space-y-3 shadow-xs">
 
-        {/* Impact segmented control */}
-        <div className="flex items-center gap-2.5">
-          <span className="text-2xs font-bold tracking-[.06em] uppercase text-neutral-400 w-14 flex-shrink-0">
+        {/* Impact filter */}
+        <div className="flex items-center gap-3">
+          <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 w-16 flex-shrink-0">
             Impact
           </span>
-          <div className="flex items-center bg-neutral-100 rounded-md p-0.5 gap-0.5">
+          <div className="flex items-center gap-1">
             {IMPACT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setImpact(opt.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                   impact === opt.value
-                    ? "bg-neutral-0 text-neutral-900 font-semibold shadow-xs"
-                    : "text-neutral-500 hover:text-neutral-700"
+                    ? "bg-neutral-900 text-white shadow-sm"
+                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
                 }`}
               >
-                {opt.dot && <span className={`w-1.5 h-1.5 rounded-full ${opt.dot}`} />}
+                {opt.color && (
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ background: opt.color }}
+                  />
+                )}
                 {opt.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Industry segmented control */}
+        {/* Industry filter */}
         {activeIndustries.length > 1 && (
-          <div className="flex items-center gap-2.5">
-            <span className="text-2xs font-bold tracking-[.06em] uppercase text-neutral-400 w-14 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 w-16 flex-shrink-0">
               Branche
             </span>
-            <div className="flex items-center bg-neutral-100 rounded-md p-0.5 gap-0.5 flex-wrap">
+            <div className="flex items-center gap-1 flex-wrap">
               <button
                 onClick={() => setIndustry("all")}
-                className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                   industry === "all"
-                    ? "bg-neutral-0 text-neutral-900 font-semibold shadow-xs"
-                    : "text-neutral-500 hover:text-neutral-700"
+                    ? "bg-neutral-900 text-white shadow-sm"
+                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
                 }`}
               >
                 Alle
@@ -103,10 +108,10 @@ export default function FeedClient({ articles, industries }: Props) {
                 <button
                   key={ind.id}
                   onClick={() => setIndustry(ind.id)}
-                  className={`px-3 py-1.5 rounded text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                     industry === ind.id
-                      ? "bg-neutral-0 text-neutral-900 font-semibold shadow-xs"
-                      : "text-neutral-500 hover:text-neutral-700"
+                      ? "bg-neutral-900 text-white shadow-sm"
+                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
                   }`}
                 >
                   {ind.name}
@@ -118,18 +123,21 @@ export default function FeedClient({ articles, industries }: Props) {
       </div>
 
       {/* ── Result count ────────────────────────────────── */}
-      <p className="text-xs text-neutral-400">
+      <p className="text-xs text-neutral-400 font-medium">
         {filtered.length} Artikel
-        {(impact !== "all" || industry !== "all") && " · gefiltert"}
+        {(impact !== "all" || industry !== "all") && (
+          <span className="ml-1.5 text-neutral-300">· gefiltert</span>
+        )}
       </p>
 
       {/* ── Articles ────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div className="text-center py-14 text-neutral-500">
-          <p className="text-sm mb-2">Keine Artikel für diese Filterauswahl.</p>
+        <div className="bg-white border border-neutral-100 rounded-xl text-center py-14 px-6">
+          <div className="text-3xl mb-3">🔍</div>
+          <p className="text-sm font-medium text-neutral-700 mb-1">Keine Artikel für diese Filterauswahl</p>
           <button
             onClick={() => { setImpact("all"); setIndustry("all"); }}
-            className="text-sm text-brand-600 font-medium hover:underline"
+            className="text-sm text-brand-600 font-medium hover:underline mt-2"
           >
             Filter zurücksetzen
           </button>
@@ -144,10 +152,10 @@ export default function FeedClient({ articles, industries }: Props) {
 
       {/* ── Load-more hint ──────────────────────────────── */}
       {articles.length >= 30 && (
-        <p className="text-center text-xs text-neutral-400 pt-3">
-          Zeige die 30 neuesten Artikel pro Branche.{" "}
-          <Link href="/dashboard/search" className="text-brand-600 font-medium hover:underline">
-            Suche für ältere Artikel →
+        <p className="text-center text-xs text-neutral-400 pt-3 pb-2">
+          Zeige die 30 neuesten Artikel je Branche.{" "}
+          <Link href="/dashboard/search" className="text-brand-600 font-semibold hover:underline">
+            Zur Suche →
           </Link>
         </p>
       )}

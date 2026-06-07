@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import FeedClient from "@/components/feed/FeedClient";
 
-export const metadata: Metadata = { title: "Mein Feed" };
+export const metadata: Metadata = { title: "Mein Feed · IntelliStream" };
 
 const ARTICLES_PER_INDUSTRY = 30;
 
@@ -22,17 +22,26 @@ export default async function FeedPage() {
 
   if (industryIds.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-16 text-center">
-        <div className="text-4xl mb-4">📡</div>
-        <h2 className="text-lg font-semibold text-neutral-800 mb-2">Noch keine Branchen ausgewählt</h2>
-        <p className="text-sm text-neutral-500 mb-6">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 py-16 text-center">
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 shadow-lg"
+          style={{ background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)" }}
+        >
+          <span className="text-2xl">📡</span>
+        </div>
+        <h2 className="text-lg font-bold text-neutral-900 mb-2">Noch keine Branchen ausgewählt</h2>
+        <p className="text-sm text-neutral-500 mb-7 max-w-xs leading-relaxed">
           Wählen Sie bis zu 5 Branchen aus, um Ihren personalisierten Feed zu starten.
         </p>
         <Link
           href="/onboarding"
-          className="inline-flex items-center gap-2 bg-brand-600 text-white text-sm font-semibold px-5 py-2.5 rounded-md hover:bg-brand-700 transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-px transition-all duration-200 text-neutral-900"
+          style={{ background: "linear-gradient(135deg, #ffca28 0%, #ffb300 100%)" }}
         >
-          Jetzt Branchen auswählen →
+          Jetzt Branchen auswählen
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
         </Link>
       </div>
     );
@@ -63,17 +72,26 @@ export default async function FeedPage() {
   const industryNames = industries.map((i) => i.name);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-6">
+    <div className="max-w-3xl mx-auto px-6 py-7">
 
-      {/* Page header */}
-      <div className="flex items-center justify-between mb-5">
+      {/* ── Page header ──────────────────────────────────── */}
+      <div className="flex items-start justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold tracking-tighter-md text-neutral-900">Mein Feed</h1>
-          <p className="text-xs text-neutral-400 mt-0.5">{industryNames.join(" · ")}</p>
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            {industryNames.map((name) => (
+              <span
+                key={name}
+                className="text-2xs font-medium text-neutral-500 bg-white border border-neutral-150 px-2 py-0.5 rounded-full"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
         </div>
         <Link
           href="/dashboard/settings"
-          className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 bg-white border border-neutral-150 px-3 py-2 rounded-lg hover:border-neutral-300 hover:text-neutral-900 transition-all shadow-xs flex-shrink-0"
         >
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
             <circle cx="12" cy="12" r="3" />
@@ -83,15 +101,19 @@ export default async function FeedPage() {
         </Link>
       </div>
 
+      {/* ── Content ──────────────────────────────────────── */}
       {articles.length === 0 ? (
-        <div className="text-center py-16 space-y-3">
-          <div className="text-4xl">📡</div>
-          <h3 className="text-sm font-semibold text-neutral-700">Noch keine Artikel vorhanden</h3>
-          <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+        <div className="bg-white border border-neutral-100 rounded-xl text-center py-16 px-6 shadow-xs">
+          <div className="text-3xl mb-3">📡</div>
+          <h3 className="text-sm font-semibold text-neutral-800 mb-1">Noch keine Artikel vorhanden</h3>
+          <p className="text-xs text-neutral-500 max-w-xs mx-auto leading-relaxed">
             Sie beobachten: <span className="font-medium text-neutral-700">{industryNames.join(", ")}</span>.
             Die Agenten laufen stündlich und befüllen Ihren Feed automatisch.
           </p>
-          <Link href="/dashboard/settings" className="inline-block text-xs text-brand-600 font-medium hover:underline">
+          <Link
+            href="/dashboard/settings"
+            className="inline-block text-xs text-brand-600 font-semibold hover:underline mt-4"
+          >
             Andere Branchen wählen →
           </Link>
         </div>

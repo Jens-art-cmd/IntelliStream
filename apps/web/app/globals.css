@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --sidebar-width: 220px;
+    --sidebar-width: 240px;
   }
 
   html {
@@ -17,13 +17,13 @@
   }
 
   body {
-    @apply bg-neutral-25 text-neutral-900;
+    @apply bg-neutral-50 text-neutral-900;
   }
 
-  /* Scrollbar */
+  /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
@@ -34,6 +34,14 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-neutral-300;
   }
+
+  /* Sidebar scrollbar (dark) */
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.1);
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,.18);
+  }
 }
 
 @layer utilities {
@@ -41,22 +49,17 @@
     text-wrap: balance;
   }
 
-  /* Tracking utilities for tighter/looser letter-spacing */
-  .tracking-tighter-xl {
-    letter-spacing: -0.04em;
-  }
-  .tracking-tighter-lg {
-    letter-spacing: -0.03em;
-  }
-  .tracking-tighter-md {
-    letter-spacing: -0.02em;
-  }
-  .tracking-tight-sm {
-    letter-spacing: -0.015em;
-  }
+  /* Letter-spacing utilities */
+  .tracking-tighter-xl { letter-spacing: -0.04em; }
+  .tracking-tighter-lg { letter-spacing: -0.03em; }
+  .tracking-tighter-md { letter-spacing: -0.02em; }
+  .tracking-tight-sm   { letter-spacing: -0.015em; }
 
-  /* Left accent bar for impact cards */
-  .card-accent-high   { border-left: 3px solid #dc2626; }
-  .card-accent-medium { border-left: 3px solid #d97706; }
-  .card-accent-low    { border-left: 3px solid #16a34a; }
+  /* Impact accent bars — left border */
+  .card-accent-high   { border-left: 3px solid #ef4444; }
+  .card-accent-medium { border-left: 3px solid #f59e0b; }
+  .card-accent-low    { border-left: 3px solid #22c55e; }
+
+  /* Gold glow ring (for active/selected states) */
+  .ring-gold { box-shadow: 0 0 0 3px rgba(255,179,0,.25); }
 }

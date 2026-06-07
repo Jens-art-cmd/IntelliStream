@@ -70,13 +70,13 @@ export default function IndustrySelector({
   return (
     <div className="space-y-5">
       {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-medium rounded-md px-3 py-2">
+        <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-medium rounded-lg px-3.5 py-2.5">
           {error}
         </div>
       )}
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      {/* Industry grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {industries.map((industry) => {
           const isSelected = selected.includes(industry.id);
           const isDisabled = !isSelected && selected.length >= 5;
@@ -86,12 +86,12 @@ export default function IndustrySelector({
               key={industry.id}
               onClick={() => toggle(industry.id)}
               disabled={isDisabled}
-              className={`text-left p-3.5 rounded-lg border-[1.5px] transition-all duration-150 flex items-start justify-between gap-3 ${
+              className={`text-left p-3.5 rounded-xl border-[1.5px] transition-all duration-150 flex items-start justify-between gap-3 ${
                 isSelected
-                  ? "border-brand-500 bg-brand-50 shadow-[0_0_0_3px_theme(colors.brand.50)]"
+                  ? "border-amber-400 bg-amber-50/60 ring-gold"
                   : isDisabled
                     ? "border-neutral-100 opacity-40 cursor-not-allowed bg-neutral-25"
-                    : "border-neutral-150 hover:border-brand-300 hover:shadow-sm bg-neutral-0"
+                    : "border-neutral-150 hover:border-neutral-300 hover:shadow-sm bg-white"
               }`}
             >
               <div className="min-w-0">
@@ -107,30 +107,42 @@ export default function IndustrySelector({
 
               {/* Checkbox */}
               <div
-                className={`w-4.5 h-4.5 rounded flex items-center justify-center flex-shrink-0 mt-0.5 border text-2xs font-bold transition-all ${
+                className={`rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 border transition-all ${
                   isSelected
-                    ? "bg-brand-600 border-brand-600 text-white"
-                    : "border-neutral-300 bg-neutral-0"
+                    ? "border-amber-500 text-white"
+                    : "border-neutral-300 bg-white"
                 }`}
-                style={{ width: "18px", height: "18px" }}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  background: isSelected ? "linear-gradient(135deg, #ffca28, #ffb300)" : undefined,
+                }}
               >
-                {isSelected && "✓"}
+                {isSelected && (
+                  <svg width="10" height="10" fill="none" viewBox="0 0 12 12" stroke="white" strokeWidth="2.5">
+                    <polyline points="2 6 5 9 10 3" />
+                  </svg>
+                )}
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Quota bar + save */}
-      <div className="space-y-3">
+      {/* Quota + save */}
+      <div className="space-y-3 pt-1">
+        {/* Progress bar */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-1.5 bg-neutral-150 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-brand-500 rounded-full transition-all duration-300"
-              style={{ width: `${(quota / 5) * 100}%` }}
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${(quota / 5) * 100}%`,
+                background: "linear-gradient(90deg, #ffca28, #ffb300)",
+              }}
             />
           </div>
-          <span className="text-xs text-neutral-500 font-medium w-24 flex-shrink-0">
+          <span className="text-xs text-neutral-500 font-medium w-24 flex-shrink-0 text-right">
             {quota} / 5 Branchen
           </span>
         </div>
@@ -144,7 +156,8 @@ export default function IndustrySelector({
           <button
             onClick={handleSave}
             disabled={saving || selected.length === 0}
-            className="bg-brand-600 text-white text-sm font-semibold px-5 py-2 rounded-md hover:bg-brand-700 disabled:opacity-50 transition-colors tracking-tight-sm"
+            className="text-sm font-bold px-5 py-2 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all duration-200 text-neutral-900"
+            style={{ background: "linear-gradient(135deg, #ffca28 0%, #ffb300 100%)" }}
           >
             {saving ? "Speichere…" : saved ? "Gespeichert ✓" : saveLabel}
           </button>
