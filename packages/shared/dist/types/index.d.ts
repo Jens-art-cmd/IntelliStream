@@ -1,0 +1,410 @@
+import { z } from "zod";
+export declare const PlanType: z.ZodEnum<["free", "starter", "pro", "enterprise"]>;
+export declare const NewsletterFrequency: z.ZodEnum<["daily", "weekly", "realtime"]>;
+export declare const ImpactLevel: z.ZodEnum<["high", "medium", "low"]>;
+export declare const SourceType: z.ZodEnum<["rss", "api", "crawler", "email"]>;
+export declare const TrustLevel: z.ZodEnum<["official", "media", "blog"]>;
+export declare const SummaryLength: z.ZodEnum<["short", "medium", "long"]>;
+export declare const AlertChannel: z.ZodEnum<["email", "push", "both"]>;
+export declare const InteractionEvent: z.ZodEnum<["open", "click", "read", "skip", "thumbs_up", "thumbs_down", "bookmark", "share"]>;
+export type PlanType = z.infer<typeof PlanType>;
+export type NewsletterFrequency = z.infer<typeof NewsletterFrequency>;
+export type ImpactLevel = z.infer<typeof ImpactLevel>;
+export type SourceType = z.infer<typeof SourceType>;
+export type TrustLevel = z.infer<typeof TrustLevel>;
+export type SummaryLength = z.infer<typeof SummaryLength>;
+export type AlertChannel = z.infer<typeof AlertChannel>;
+export type InteractionEvent = z.infer<typeof InteractionEvent>;
+export declare const IndustrySchema: z.ZodObject<{
+    id: z.ZodNumber;
+    name: z.ZodString;
+    slug: z.ZodString;
+    description: z.ZodNullable<z.ZodString>;
+    sources: z.ZodArray<z.ZodRecord<z.ZodString, z.ZodUnknown>, "many">;
+    tags_taxonomy: z.ZodRecord<z.ZodString, z.ZodArray<z.ZodString, "many">>;
+    crawl_interval_minutes: z.ZodNumber;
+    is_active: z.ZodBoolean;
+    created_at: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    sources: Record<string, unknown>[];
+    tags_taxonomy: Record<string, string[]>;
+    crawl_interval_minutes: number;
+    is_active: boolean;
+    created_at: string;
+}, {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    sources: Record<string, unknown>[];
+    tags_taxonomy: Record<string, string[]>;
+    crawl_interval_minutes: number;
+    is_active: boolean;
+    created_at: string;
+}>;
+export declare const ArticleSchema: z.ZodObject<{
+    id: z.ZodString;
+    source_url: z.ZodString;
+    title: z.ZodString;
+    full_text: z.ZodNullable<z.ZodString>;
+    summary_short: z.ZodNullable<z.ZodString>;
+    summary_medium: z.ZodNullable<z.ZodString>;
+    summary_long: z.ZodNullable<z.ZodString>;
+    industry_id: z.ZodNumber;
+    source_id: z.ZodNullable<z.ZodString>;
+    tags: z.ZodArray<z.ZodString, "many">;
+    relevance_score: z.ZodNullable<z.ZodNumber>;
+    impact_level: z.ZodNullable<z.ZodEnum<["high", "medium", "low"]>>;
+    impact_reason: z.ZodNullable<z.ZodString>;
+    trust_score: z.ZodNullable<z.ZodNumber>;
+    published_at: z.ZodNullable<z.ZodString>;
+    ingested_at: z.ZodString;
+    processed_at: z.ZodNullable<z.ZodString>;
+    language: z.ZodString;
+    is_breaking: z.ZodBoolean;
+}, "strip", z.ZodTypeAny, {
+    id: string;
+    source_url: string;
+    title: string;
+    full_text: string | null;
+    summary_short: string | null;
+    summary_medium: string | null;
+    summary_long: string | null;
+    industry_id: number;
+    source_id: string | null;
+    tags: string[];
+    relevance_score: number | null;
+    impact_level: "high" | "medium" | "low" | null;
+    impact_reason: string | null;
+    trust_score: number | null;
+    published_at: string | null;
+    ingested_at: string;
+    processed_at: string | null;
+    language: string;
+    is_breaking: boolean;
+}, {
+    id: string;
+    source_url: string;
+    title: string;
+    full_text: string | null;
+    summary_short: string | null;
+    summary_medium: string | null;
+    summary_long: string | null;
+    industry_id: number;
+    source_id: string | null;
+    tags: string[];
+    relevance_score: number | null;
+    impact_level: "high" | "medium" | "low" | null;
+    impact_reason: string | null;
+    trust_score: number | null;
+    published_at: string | null;
+    ingested_at: string;
+    processed_at: string | null;
+    language: string;
+    is_breaking: boolean;
+}>;
+export declare const UserSchema: z.ZodObject<{
+    id: z.ZodString;
+    email: z.ZodString;
+    name: z.ZodNullable<z.ZodString>;
+    plan: z.ZodEnum<["free", "starter", "pro", "enterprise"]>;
+    industry_subscriptions: z.ZodArray<z.ZodNumber, "many">;
+    newsletter_frequency: z.ZodEnum<["daily", "weekly", "realtime"]>;
+    newsletter_time: z.ZodString;
+    stripe_customer_id: z.ZodNullable<z.ZodString>;
+    newsletter_opt_in: z.ZodBoolean;
+    created_at: z.ZodString;
+    updated_at: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    email: string;
+    id: string;
+    name: string | null;
+    created_at: string;
+    plan: "free" | "starter" | "pro" | "enterprise";
+    industry_subscriptions: number[];
+    newsletter_frequency: "daily" | "weekly" | "realtime";
+    newsletter_time: string;
+    stripe_customer_id: string | null;
+    newsletter_opt_in: boolean;
+    updated_at: string;
+}, {
+    email: string;
+    id: string;
+    name: string | null;
+    created_at: string;
+    plan: "free" | "starter" | "pro" | "enterprise";
+    industry_subscriptions: number[];
+    newsletter_frequency: "daily" | "weekly" | "realtime";
+    newsletter_time: string;
+    stripe_customer_id: string | null;
+    newsletter_opt_in: boolean;
+    updated_at: string;
+}>;
+export declare const UserProfileSchema: z.ZodObject<{
+    user_id: z.ZodString;
+    preferred_tags: z.ZodArray<z.ZodString, "many">;
+    excluded_tags: z.ZodArray<z.ZodString, "many">;
+    avg_read_depth: z.ZodNumber;
+    preferred_summary_length: z.ZodEnum<["short", "medium", "long"]>;
+    updated_at: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    updated_at: string;
+    user_id: string;
+    preferred_tags: string[];
+    excluded_tags: string[];
+    avg_read_depth: number;
+    preferred_summary_length: "medium" | "short" | "long";
+}, {
+    updated_at: string;
+    user_id: string;
+    preferred_tags: string[];
+    excluded_tags: string[];
+    avg_read_depth: number;
+    preferred_summary_length: "medium" | "short" | "long";
+}>;
+export declare const UserAlertSchema: z.ZodObject<{
+    id: z.ZodString;
+    user_id: z.ZodString;
+    name: z.ZodString;
+    keywords: z.ZodArray<z.ZodString, "many">;
+    companies: z.ZodArray<z.ZodString, "many">;
+    laws: z.ZodArray<z.ZodString, "many">;
+    min_impact: z.ZodEnum<["high", "medium", "low"]>;
+    channel: z.ZodEnum<["email", "push", "both"]>;
+    is_active: z.ZodBoolean;
+    created_at: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    id: string;
+    name: string;
+    is_active: boolean;
+    created_at: string;
+    user_id: string;
+    keywords: string[];
+    companies: string[];
+    laws: string[];
+    min_impact: "high" | "medium" | "low";
+    channel: "email" | "push" | "both";
+}, {
+    id: string;
+    name: string;
+    is_active: boolean;
+    created_at: string;
+    user_id: string;
+    keywords: string[];
+    companies: string[];
+    laws: string[];
+    min_impact: "high" | "medium" | "low";
+    channel: "email" | "push" | "both";
+}>;
+export declare const InteractionSchema: z.ZodObject<{
+    id: z.ZodString;
+    user_id: z.ZodString;
+    article_id: z.ZodString;
+    event_type: z.ZodEnum<["open", "click", "read", "skip", "thumbs_up", "thumbs_down", "bookmark", "share"]>;
+    read_duration_seconds: z.ZodNullable<z.ZodNumber>;
+    scroll_depth: z.ZodNullable<z.ZodNumber>;
+    occurred_at: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    id: string;
+    user_id: string;
+    article_id: string;
+    event_type: "open" | "click" | "read" | "skip" | "thumbs_up" | "thumbs_down" | "bookmark" | "share";
+    read_duration_seconds: number | null;
+    scroll_depth: number | null;
+    occurred_at: string;
+}, {
+    id: string;
+    user_id: string;
+    article_id: string;
+    event_type: "open" | "click" | "read" | "skip" | "thumbs_up" | "thumbs_down" | "bookmark" | "share";
+    read_duration_seconds: number | null;
+    scroll_depth: number | null;
+    occurred_at: string;
+}>;
+export declare const FeedQuerySchema: z.ZodObject<{
+    limit: z.ZodDefault<z.ZodNumber>;
+    offset: z.ZodDefault<z.ZodNumber>;
+    industry_ids: z.ZodOptional<z.ZodEffects<z.ZodString, number[], string>>;
+    impact: z.ZodOptional<z.ZodEnum<["high", "medium", "low"]>>;
+    days_back: z.ZodDefault<z.ZodNumber>;
+}, "strip", z.ZodTypeAny, {
+    limit: number;
+    offset: number;
+    days_back: number;
+    industry_ids?: number[] | undefined;
+    impact?: "high" | "medium" | "low" | undefined;
+}, {
+    limit?: number | undefined;
+    offset?: number | undefined;
+    industry_ids?: string | undefined;
+    impact?: "high" | "medium" | "low" | undefined;
+    days_back?: number | undefined;
+}>;
+export declare const SearchQuerySchema: z.ZodObject<{
+    q: z.ZodString;
+    limit: z.ZodDefault<z.ZodNumber>;
+    offset: z.ZodDefault<z.ZodNumber>;
+    industry_ids: z.ZodOptional<z.ZodEffects<z.ZodString, number[], string>>;
+    mode: z.ZodDefault<z.ZodEnum<["semantic", "fulltext", "hybrid"]>>;
+}, "strip", z.ZodTypeAny, {
+    limit: number;
+    offset: number;
+    q: string;
+    mode: "semantic" | "fulltext" | "hybrid";
+    industry_ids?: number[] | undefined;
+}, {
+    q: string;
+    limit?: number | undefined;
+    offset?: number | undefined;
+    industry_ids?: string | undefined;
+    mode?: "semantic" | "fulltext" | "hybrid" | undefined;
+}>;
+export declare const CreateAlertSchema: z.ZodObject<Omit<{
+    id: z.ZodString;
+    user_id: z.ZodString;
+    name: z.ZodString;
+    keywords: z.ZodArray<z.ZodString, "many">;
+    companies: z.ZodArray<z.ZodString, "many">;
+    laws: z.ZodArray<z.ZodString, "many">;
+    min_impact: z.ZodEnum<["high", "medium", "low"]>;
+    channel: z.ZodEnum<["email", "push", "both"]>;
+    is_active: z.ZodBoolean;
+    created_at: z.ZodString;
+}, "id" | "created_at" | "user_id">, "strip", z.ZodTypeAny, {
+    name: string;
+    is_active: boolean;
+    keywords: string[];
+    companies: string[];
+    laws: string[];
+    min_impact: "high" | "medium" | "low";
+    channel: "email" | "push" | "both";
+}, {
+    name: string;
+    is_active: boolean;
+    keywords: string[];
+    companies: string[];
+    laws: string[];
+    min_impact: "high" | "medium" | "low";
+    channel: "email" | "push" | "both";
+}>;
+export declare const UpdateProfileSchema: z.ZodObject<{
+    preferred_tags: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    excluded_tags: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+    preferred_summary_length: z.ZodOptional<z.ZodEnum<["short", "medium", "long"]>>;
+}, "strip", z.ZodTypeAny, {
+    preferred_tags?: string[] | undefined;
+    excluded_tags?: string[] | undefined;
+    preferred_summary_length?: "medium" | "short" | "long" | undefined;
+}, {
+    preferred_tags?: string[] | undefined;
+    excluded_tags?: string[] | undefined;
+    preferred_summary_length?: "medium" | "short" | "long" | undefined;
+}>;
+export declare const UpdateUserSchema: z.ZodObject<{
+    name: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    industry_subscriptions: z.ZodOptional<z.ZodArray<z.ZodNumber, "many">>;
+    newsletter_frequency: z.ZodOptional<z.ZodEnum<["daily", "weekly", "realtime"]>>;
+    newsletter_time: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    name?: string | null | undefined;
+    industry_subscriptions?: number[] | undefined;
+    newsletter_frequency?: "daily" | "weekly" | "realtime" | undefined;
+    newsletter_time?: string | undefined;
+}, {
+    name?: string | null | undefined;
+    industry_subscriptions?: number[] | undefined;
+    newsletter_frequency?: "daily" | "weekly" | "realtime" | undefined;
+    newsletter_time?: string | undefined;
+}>;
+export declare const RawArticleSchema: z.ZodObject<{
+    source_url: z.ZodString;
+    title: z.ZodString;
+    full_text: z.ZodOptional<z.ZodString>;
+    published_at: z.ZodOptional<z.ZodString>;
+    industry_id: z.ZodNumber;
+    source_id: z.ZodOptional<z.ZodString>;
+    language: z.ZodDefault<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    source_url: string;
+    title: string;
+    industry_id: number;
+    language: string;
+    full_text?: string | undefined;
+    source_id?: string | undefined;
+    published_at?: string | undefined;
+}, {
+    source_url: string;
+    title: string;
+    industry_id: number;
+    full_text?: string | undefined;
+    source_id?: string | undefined;
+    published_at?: string | undefined;
+    language?: string | undefined;
+}>;
+export declare const ProcessedArticleSchema: z.ZodObject<{
+    source_url: z.ZodString;
+    title: z.ZodString;
+    full_text: z.ZodOptional<z.ZodString>;
+    published_at: z.ZodOptional<z.ZodString>;
+    industry_id: z.ZodNumber;
+    source_id: z.ZodOptional<z.ZodString>;
+    language: z.ZodDefault<z.ZodString>;
+} & {
+    summary_short: z.ZodString;
+    summary_medium: z.ZodString;
+    summary_long: z.ZodString;
+    tags: z.ZodArray<z.ZodString, "many">;
+    relevance_score: z.ZodNumber;
+    impact_level: z.ZodEnum<["high", "medium", "low"]>;
+    impact_reason: z.ZodString;
+    trust_score: z.ZodNumber;
+    embedding: z.ZodArray<z.ZodNumber, "many">;
+}, "strip", z.ZodTypeAny, {
+    source_url: string;
+    title: string;
+    summary_short: string;
+    summary_medium: string;
+    summary_long: string;
+    industry_id: number;
+    tags: string[];
+    relevance_score: number;
+    impact_level: "high" | "medium" | "low";
+    impact_reason: string;
+    trust_score: number;
+    language: string;
+    embedding: number[];
+    full_text?: string | undefined;
+    source_id?: string | undefined;
+    published_at?: string | undefined;
+}, {
+    source_url: string;
+    title: string;
+    summary_short: string;
+    summary_medium: string;
+    summary_long: string;
+    industry_id: number;
+    tags: string[];
+    relevance_score: number;
+    impact_level: "high" | "medium" | "low";
+    impact_reason: string;
+    trust_score: number;
+    embedding: number[];
+    full_text?: string | undefined;
+    source_id?: string | undefined;
+    published_at?: string | undefined;
+    language?: string | undefined;
+}>;
+export type Industry = z.infer<typeof IndustrySchema>;
+export type Article = z.infer<typeof ArticleSchema>;
+export type User = z.infer<typeof UserSchema>;
+export type UserProfile = z.infer<typeof UserProfileSchema>;
+export type UserAlert = z.infer<typeof UserAlertSchema>;
+export type Interaction = z.infer<typeof InteractionSchema>;
+export type RawArticle = z.infer<typeof RawArticleSchema>;
+export type ProcessedArticle = z.infer<typeof ProcessedArticleSchema>;
+export type FeedQuery = z.infer<typeof FeedQuerySchema>;
+export type SearchQuery = z.infer<typeof SearchQuerySchema>;

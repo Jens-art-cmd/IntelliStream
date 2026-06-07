@@ -1,0 +1,135 @@
+{
+  "name": "Scout: Energie & Erneuerbare",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 1 }] }
+      },
+      "name": "Schedule (stündlich)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "id": "schedule-trigger"
+    },
+    {
+      "parameters": {
+        "values": {
+          "array": [
+            {
+              "name": "sources",
+              "value": "[{\"name\":\"BMWK RSS\",\"url\":\"https://www.bmwk.de/SiteGlobals/BMWI/RSSFeeds/rss.xml\",\"trust_level\":\"official\"},{\"name\":\"PV Magazine\",\"url\":\"https://www.pv-magazine.de/feed/\",\"trust_level\":\"media\"},{\"name\":\"Energiezukunft\",\"url\":\"https://energiezukunft.eu/feed/\",\"trust_level\":\"media\"}]"
+            }
+          ]
+        }
+      },
+      "name": "Quellen definieren",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [460, 300],
+      "id": "set-sources"
+    },
+    {
+      "parameters": {
+        "jsCode": "return JSON.parse($input.first().json.sources).map(s => ({ json: s }));"
+      },
+      "name": "Quellen aufteilen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "id": "split-sources"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "timeout": 20000,
+          "headers": { "User-Agent": "IntelliStream-Scout/1.0" }
+        }
+      },
+      "name": "RSS abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "id": "fetch-rss"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sourceName = $('Quellen aufteilen').first().json.name;\nconst trustLevel = $('Quellen aufteilen').first().json.trust_level;\nconst sourceUrl = $('Quellen aufteilen').first().json.url;\nconst xml = $input.first().json.data;\n\n// Simple RSS item extraction via regex (n8n has no built-in XML parser in Code node)\nconst items = [];\nconst itemRegex = /<item[^>]*>([\\s\\S]*?)<\\/item>/gi;\nlet match;\nwhile ((match = itemRegex.exec(xml)) !== null) {\n  const block = match[1];\n  const title = (block.match(/<title[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/title>/) || block.match(/<title[^>]*>([^<]+)<\\/title>/) || [])[1]?.trim();\n  const link = (block.match(/<link[^>]*>([^<]+)<\\/link>/) || block.match(/<link[^>]*href=\"([^\"]+)\"/) || [])[1]?.trim();\n  const pubDate = (block.match(/<pubDate[^>]*>([^<]+)<\\/pubDate>/) || [])[1]?.trim();\n  if (title && link?.startsWith('http')) {\n    items.push({\n      json: {\n        title,\n        source_url: link,\n        published_at: pubDate ? new Date(pubDate).toISOString() : null,\n        industry_id: 1,\n        language: 'de',\n        tags: [],\n        _sourceName: sourceName,\n        _sourceUrl: sourceUrl,\n        _trustLevel: trustLevel,\n      }\n    });\n  }\n}\nreturn items;"
+      },
+      "name": "Artikel parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "id": "parse-articles"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/sources",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=representation,resolution=ignore-duplicates" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "body",
+              "value": "={{ JSON.stringify({ industry_id: 1, name: $json._sourceName, url: $json._sourceUrl, type: 'rss', trust_level: $json._trustLevel }) }}"
+            }
+          ]
+        }
+      },
+      "name": "Quelle anlegen (falls neu)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300],
+      "id": "upsert-source"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/articles",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "resolution=ignore-duplicates" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "body",
+              "value": "={{ JSON.stringify({ source_url: $json.source_url, title: $json.title, industry_id: $json.industry_id, source_id: $('Quelle anlegen (falls neu)').first().json[0]?.id ?? null, published_at: $json.published_at, language: $json.language, tags: [] }) }}"
+            }
+          ]
+        },
+        "options": { "response": { "response": { "responseFormat": "json" } } }
+      },
+      "name": "Artikel speichern",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 300],
+      "id": "insert-article"
+    }
+  ],
+  "connections": {
+    "Schedule (stündlich)": { "main": [[{ "node": "Quellen definieren", "type": "main", "index": 0 }]] },
+    "Quellen definieren": { "main": [[{ "node": "Quellen aufteilen", "type": "main", "index": 0 }]] },
+    "Quellen aufteilen": { "main": [[{ "node": "RSS abrufen", "type": "main", "index": 0 }]] },
+    "RSS abrufen": { "main": [[{ "node": "Artikel parsen", "type": "main", "index": 0 }]] },
+    "Artikel parsen": { "main": [[{ "node": "Quelle anlegen (falls neu)", "type": "main", "index": 0 }]] },
+    "Quelle anlegen (falls neu)": { "main": [[{ "node": "Artikel speichern", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": ["scout", "energie"]
+}

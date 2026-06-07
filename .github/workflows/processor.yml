@@ -1,0 +1,41 @@
+name: Processor Agent
+
+on:
+  schedule:
+    - cron: '15 * * * *'  # Stündlich um :15 Uhr UTC (nach dem Scout)
+  workflow_dispatch:        # Manuell auslösbar im GitHub UI
+
+jobs:
+  processor:
+    name: Artikel verarbeiten (Summary + Scoring)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+
+      - name: Processor — alle unverarbeiteten Artikel
+        run: |
+          for i in $(seq 1 20); do
+            echo "=== Batch $i ==="
+            output=$(npm run start -w @intellistream/agents-processor 2>&1)
+            echo "$output"
+            if echo "$output" | grep -q "No unprocessed articles"; then
+              echo "Alle Artikel verarbeitet."
+              break
+            fi
+          done
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
