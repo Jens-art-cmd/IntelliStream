@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
-import { createBrowserClient } from "@supabase/ssr";
 
 interface SearchResult {
   id: string;
@@ -48,30 +47,14 @@ export default function SearchClient() {
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-
   async function search(q: string, m: SearchMode) {
     if (!q.trim()) return;
     setError(null);
 
     startTransition(async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-
-        const params = new URLSearchParams({
-          q: q.trim(),
-          mode: m,
-          limit: "20",
-        });
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"}/search?${params}`,
-          { headers: token ? { Authorization: `Bearer ${token}` } : {} },
-        );
+        const params = new URLSearchParams({ q: q.trim(), mode: m, limit: "20" });
+        const res = await fetch(`/api/search?${params}`);
 
         if (!res.ok) throw new Error(`Suche fehlgeschlagen (${res.status})`);
 
