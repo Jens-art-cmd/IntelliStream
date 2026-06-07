@@ -23,7 +23,7 @@ export async function fetchRssFeed(feedUrl: string): Promise<FeedItem[]> {
 
   if (!res.ok) throw new Error(`HTTP ${res.status} from ${feedUrl}`);
 
-  const xml = await res.text();
+  const xml = await decodeResponse(res);
   const doc = parser.parse(xml);
 
   // RSS 2.0
@@ -101,4 +101,35 @@ function parseDate(raw: unknown): Date | null {
 
 function isValid(item: FeedItem): boolean {
   return item.title.length > 0 && item.url.startsWith("http");
+}
+
+// ---------------------------------------------------------------------------
+// Encoding-aware response decoder
+// Feeds wie Golem.de liefern ISO-8859-1 ohne expliziten Charset-Header.
+// res.text() würde dann UTF-8 annehmen und Umlaute zerstören.
+// ---------------------------------------------------------------------------
+
+async function decodeResponse(res: Response): Promise<string> {
+  const buffer = await res.arrayBuffer();
+
+  // 1. Charset aus Content-Type Header
+  const ct = res.headers.get("content-type") ?? "";
+  const ctCharset = ct.match(/charset=([^\s;]+)/i)?.[1];
+  if (ctCharset) return decode(buffer, ctCharset);
+
+  // 2. Charset aus XML-Deklaration (<?xml ... encoding="ISO-8859-1"?>)
+  const ascii = new TextDecoder("ascii", { fatal: false }).decode(new Uint8Array(buffer).slice(0, 300));
+  const xmlCharset = ascii.match(/<?xml[^>]+encoding=["']([^"']+)["']/i)?.[1];
+  if (xmlCharset) return decode(buffer, xmlCharset);
+
+  // 3. Fallback UTF-8
+  return new TextDecoder("utf-8").decode(buffer);
+}
+
+function decode(buffer: ArrayBuffer, charset: string): string {
+  try {
+    return new TextDecoder(charset).decode(buffer);
+  } catch {
+    return new TextDecoder("utf-8").decode(buffer);
+  }
 }
