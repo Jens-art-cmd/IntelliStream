@@ -12,9 +12,11 @@
     "start:it": "tsx src/it.ts",
     "start:it:dry": "DRY_RUN=true tsx src/it.ts",
     "start:automotive": "tsx src/automotive.ts",
-    "start:automotive:dry": "DRY_RUN=true tsx src/automotive.ts"
+    "start:automotive:dry": "DRY_RUN=true tsx src/automotive.ts",
+    "start:check": "tsx src/source-checker.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
     "@intellistream/shared": "*",
     "dotenv": "^17.4.2",
     "fast-xml-parser": "^4.5.0"
