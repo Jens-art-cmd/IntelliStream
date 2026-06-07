@@ -5,12 +5,12 @@ const INDUSTRY_ID = 8; // Automotive & Mobilität
 runScout(INDUSTRY_ID, [
   {
     name: "ACEA (European Automobile Manufacturers)",
-    url: "https://www.acea.auto/feed/",
+    url: "https://www.acea.auto/rss/",
     trust_level: "official",
   },
   {
     name: "Automobilwoche",
-    url: "https://www.automobilwoche.de/rss",
+    url: "https://feeds.feedburner.com/automobilwoche",
     trust_level: "media",
   },
   {

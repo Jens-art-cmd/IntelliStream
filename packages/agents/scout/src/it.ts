@@ -4,9 +4,9 @@ const INDUSTRY_ID = 4; // IT & Cybersecurity
 
 runScout(INDUSTRY_ID, [
   {
-    name: "BSI Sicherheitshinweise",
-    url: "https://www.bsi.bund.de/SiteGlobals/Functions/RSSFeed/RSSNewsfeed/RSSNewsfeed.xml",
-    trust_level: "official",
+    name: "Heise Security",
+    url: "https://heise.de/security/rss/news-atom.xml",
+    trust_level: "media",
   },
   {
     name: "Heise Online",
@@ -21,6 +21,11 @@ runScout(INDUSTRY_ID, [
   {
     name: "Golem.de",
     url: "https://rss.golem.de/rss.php?feed=RSS2.0",
+    trust_level: "media",
+  },
+  {
+    name: "Infopoint Security",
+    url: "https://www.infopoint-security.de/rss/",
     trust_level: "media",
   },
 ], "IT & Cybersecurity").catch((err) => {

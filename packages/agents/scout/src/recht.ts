@@ -4,26 +4,31 @@ const INDUSTRY_ID = 3; // Recht & Compliance
 
 runScout(INDUSTRY_ID, [
   {
-    name: "Bundesrat RSS",
-    url: "https://www.bundesrat.de/SiteGlobals/Forms/RSS/rss.html",
+    name: "DSGVO-Gesetz.de",
+    url: "https://dsgvo-gesetz.de/feed/",
     trust_level: "official",
   },
   {
-    name: "EuGH Pressemitteilungen",
-    url: "https://curia.europa.eu/rss/rss.xml",
-    trust_level: "official",
-  },
-  {
-    name: "Beck aktuell (NJW)",
-    url: "https://rsw.beck.de/rss/rss.aspx?feed=NJW",
+    name: "Datenschutz-Notizen",
+    url: "https://www.datenschutz-notizen.de/feed/",
     trust_level: "media",
   },
   {
-    name: "Legal Tribune Online",
-    url: "https://www.lto.de/rss/",
+    name: "Datenschutzbeauftragter Info",
+    url: "https://www.datenschutzbeauftragter-info.de/feed/",
     trust_level: "media",
   },
-], "Recht").catch((err) => {
+  {
+    name: "JUVE Rechtsmarkt",
+    url: "https://www.juve.de/feed",
+    trust_level: "media",
+  },
+  {
+    name: "Datenschutz-Praxis",
+    url: "https://www.datenschutz-praxis.de/feed/",
+    trust_level: "media",
+  },
+], "Recht & Compliance").catch((err) => {
   console.error("[Scout:Recht] Fatal:", err);
   process.exit(1);
 });
