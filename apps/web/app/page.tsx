@@ -70,10 +70,7 @@ export default function LandingPage() {
           {/* Headline */}
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tighter-xl leading-[1.06] text-white mb-5 text-balance">
             Immer informiert.{" "}
-            <span
-              className="inline-block"
-              style={{ WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)" }}
-            >
+            <span style={{ color: "#ffca28" }}>
               In Ihrer Branche.
             </span>
           </h1>
@@ -104,7 +101,7 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <p className="text-xs text-slate-600 mt-5 font-medium">
+          <p className="text-xs text-slate-400 mt-5 font-medium">
             Keine Kreditkarte · 14 Tage kostenlos · DSGVO-konform
           </p>
         </div>
