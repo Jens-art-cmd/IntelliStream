@@ -1,5 +1,28 @@
 import type { FastifyPluginAsync } from "fastify";
+import OpenAI from "openai";
 import { SearchQuerySchema } from "@intellistream/shared";
+
+let _openai: OpenAI | null = null;
+function getOpenAI(): OpenAI | null {
+  if (!process.env["OPENAI_API_KEY"]) return null;
+  if (!_openai) _openai = new OpenAI({ apiKey: process.env["OPENAI_API_KEY"] });
+  return _openai;
+}
+
+async function getQueryEmbedding(text: string): Promise<number[] | null> {
+  const client = getOpenAI();
+  if (!client) return null;
+  try {
+    const res = await client.embeddings.create({
+      model: "text-embedding-3-small",
+      input: text.slice(0, 8_191),
+      dimensions: 1536,
+    });
+    return res.data[0]?.embedding ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const searchRoutes: FastifyPluginAsync = async (app) => {
   // GET /search?q=...&mode=semantic|fulltext|hybrid
@@ -9,34 +32,57 @@ const searchRoutes: FastifyPluginAsync = async (app) => {
 
     const { q, limit, offset, industry_ids, mode } = query.data;
 
-    if (mode === "fulltext" || mode === "hybrid") {
-      const { data: ftData, error: ftError } = await request.supabase.rpc(
-        "search_articles_fulltext",
-        {
-          query_text: q,
-          industry_ids: industry_ids ?? null,
-          match_count: limit,
-          offset_count: offset,
-        },
-      );
-      if (ftError) return reply.internalServerError(ftError.message);
-      if (mode === "fulltext") return { results: ftData ?? [], query: q };
+    // Volltext-only
+    if (mode === "fulltext") {
+      const { data, error } = await request.supabase.rpc("search_articles_fulltext", {
+        query_text:   q,
+        industry_ids: industry_ids ?? null,
+        match_count:  limit,
+        offset_count: offset,
+      });
+      if (error) return reply.internalServerError(error.message);
+      return { results: data ?? [], query: q, mode: "fulltext" };
     }
 
-    // For semantic/hybrid: generate embedding first
-    // Embedding generation is done by calling the API's embedding service
-    // In Phase 2 this will call OpenAI text-embedding-3-small
-    // For now, fallback to fulltext
-    const { data: ftFallback } = await request.supabase.rpc(
-      "search_articles_fulltext",
-      {
-        query_text: q,
-        industry_ids: industry_ids ?? null,
-        match_count: limit,
-        offset_count: offset,
-      },
-    );
+    // Semantisch (oder Hybrid) — Embedding für die Query generieren
+    const embedding = await getQueryEmbedding(q);
 
+    if (embedding) {
+      const { data: semData, error: semError } = await request.supabase.rpc("search_articles", {
+        query_embedding: embedding as unknown as string,
+        industry_ids:    industry_ids ?? null,
+        match_threshold: 0.35,   // niedrig für breitere Ergebnisse
+        match_count:     limit,
+        offset_count:    offset,
+      });
+
+      if (!semError && semData?.length) {
+        // Hybrid: semantische Ergebnisse + Volltext zusammenführen
+        if (mode === "hybrid") {
+          const { data: ftData } = await request.supabase.rpc("search_articles_fulltext", {
+            query_text:   q,
+            industry_ids: industry_ids ?? null,
+            match_count:  limit,
+            offset_count: 0,
+          });
+          const seen = new Set(semData.map((r: { id: string }) => r.id));
+          const merged = [
+            ...semData,
+            ...(ftData ?? []).filter((r: { id: string }) => !seen.has(r.id)),
+          ].slice(0, limit);
+          return { results: merged, query: q, mode: "hybrid" };
+        }
+        return { results: semData, query: q, mode: "semantic" };
+      }
+    }
+
+    // Fallback: Volltext
+    const { data: ftFallback } = await request.supabase.rpc("search_articles_fulltext", {
+      query_text:   q,
+      industry_ids: industry_ids ?? null,
+      match_count:  limit,
+      offset_count: offset,
+    });
     return { results: ftFallback ?? [], query: q, mode: "fulltext_fallback" };
   });
 };
