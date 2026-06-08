@@ -19,7 +19,7 @@ function NavLink({ href, label, children }: NavLinkProps) {
     <Link
       href={href}
       className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[13px] font-medium transition-all duration-200 mb-1.5 group ${
-        isActive ? "text-amber-600" : "text-neutral-500 hover:text-neutral-700"
+        isActive ? "text-amber-600" : "text-neutral-600 hover:text-neutral-800"
       }`}
       style={
         isActive
@@ -29,7 +29,7 @@ function NavLink({ href, label, children }: NavLinkProps) {
     >
       <span
         className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-          isActive ? "text-amber-500" : "text-neutral-400 group-hover:text-neutral-600"
+          isActive ? "text-amber-500" : "text-neutral-500 group-hover:text-neutral-700"
         }`}
       >
         {children}
@@ -48,7 +48,7 @@ function NavLink({ href, label, children }: NavLinkProps) {
 export default function SidebarNav() {
   return (
     <nav className="flex-1 px-3 py-2 overflow-y-auto">
-      <p className="text-[10px] font-bold tracking-[.12em] uppercase px-3 py-1.5 mb-1 text-neutral-400">
+      <p className="text-[10px] font-bold tracking-[.12em] uppercase px-3 py-1.5 mb-1 text-neutral-500">
         Hauptmenü
       </p>
       <NavLink href="/dashboard/feed" label="Mein Feed">

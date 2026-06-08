@@ -85,7 +85,8 @@ export default async function FeedPage() {
             {industryNames.map((name) => (
               <span
                 key={name}
-                className="text-2xs font-medium text-neutral-500 bg-white border border-neutral-150 px-2 py-0.5 rounded-full"
+                className="text-2xs font-semibold text-neutral-600 px-2.5 py-0.5 rounded-full"
+                style={{ boxShadow: "inset 2px 2px 4px #c5cad3, inset -2px -2px 4px #ffffff" }}
               >
                 {name}
               </span>
@@ -94,7 +95,8 @@ export default async function FeedPage() {
         </div>
         <Link
           href="/dashboard/settings"
-          className="flex items-center gap-1.5 text-xs font-medium text-neutral-500 bg-white border border-neutral-150 px-3 py-2 rounded-lg hover:border-neutral-300 hover:text-neutral-900 transition-all shadow-xs flex-shrink-0"
+          className="flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-800 px-3 py-2 rounded-xl transition-all flex-shrink-0"
+          style={{ boxShadow: "4px 4px 8px #c5cad3, -4px -4px 8px #ffffff" }}
         >
           <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
             <circle cx="12" cy="12" r="3" />

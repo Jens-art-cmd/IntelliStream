@@ -37,10 +37,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <span className="text-[12px] font-black tracking-tight text-white drop-shadow-sm">IS</span>
             </div>
             <div>
-              <p className="text-[14px] font-bold tracking-tight text-neutral-700 leading-none">
+              <p className="text-[14px] font-bold tracking-tight text-neutral-800 leading-none">
                 IntelliStream
               </p>
-              <p className="text-[10px] text-neutral-400 mt-0.5 leading-none font-medium">
+              <p className="text-[10px] text-neutral-500 mt-0.5 leading-none font-medium">
                 Fachinformation · KI
               </p>
             </div>
@@ -64,7 +64,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium truncate text-neutral-500">{email}</p>
+              <p className="text-[11px] font-medium truncate text-neutral-600">{email}</p>
             </div>
           </div>
           <LogoutButton />

@@ -71,7 +71,7 @@ export default function ArticleCard({ article, isBookmarked = false }: ArticleCa
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {publishedDate && (
-            <span className="text-2xs text-neutral-400 tabular-nums font-medium">
+            <span className="text-2xs text-neutral-500 tabular-nums font-medium">
               {publishedDate}
             </span>
           )}
@@ -81,14 +81,14 @@ export default function ArticleCard({ article, isBookmarked = false }: ArticleCa
 
       {/* Title */}
       <Link href={`/dashboard/article/${article.id}`}>
-        <h2 className="text-sm font-semibold text-neutral-700 hover:text-amber-600 leading-snug mb-2.5 tracking-tight-sm transition-colors">
+        <h2 className="text-sm font-semibold text-neutral-800 hover:text-amber-600 leading-snug mb-2.5 tracking-tight-sm transition-colors">
           {article.title}
         </h2>
       </Link>
 
       {/* Summary */}
       {article.summary_medium && (
-        <p className="text-xs text-neutral-500 leading-relaxed mb-3.5 line-clamp-2">
+        <p className="text-xs text-neutral-600 leading-relaxed mb-3.5 line-clamp-2">
           {article.summary_medium}
         </p>
       )}
@@ -100,7 +100,7 @@ export default function ArticleCard({ article, isBookmarked = false }: ArticleCa
           {article.tags.slice(0, 4).map((tag) => (
             <span
               key={tag}
-              className="text-2xs font-medium text-neutral-500 px-2.5 py-0.5 rounded-full"
+              className="text-2xs font-medium text-neutral-600 px-2.5 py-0.5 rounded-full"
               style={{
                 background: "#e8eef5",
                 boxShadow: "inset 2px 2px 4px #c5cad3, inset -2px -2px 4px #ffffff",
@@ -129,7 +129,7 @@ export default function ArticleCard({ article, isBookmarked = false }: ArticleCa
                   }}
                 />
               </div>
-              <span className="text-2xs text-neutral-400 font-mono">{score}</span>
+              <span className="text-2xs text-neutral-500 font-mono">{score}</span>
             </div>
           )}
           <a

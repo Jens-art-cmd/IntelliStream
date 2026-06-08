@@ -64,7 +64,7 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
     : {
         boxShadow: "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
         background: "#e8eef5",
-        color: "#6b7280",
+        color: "#4b5563",
       };
 
   return (
@@ -81,7 +81,7 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
       >
         {/* Impact filter */}
         <div className="flex items-center gap-3">
-          <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 w-16 flex-shrink-0">
+          <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-500 w-16 flex-shrink-0">
             Impact
           </span>
           <div className="flex items-center gap-2 flex-wrap">
@@ -107,7 +107,7 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
         {/* Industry filter */}
         {activeIndustries.length > 1 && (
           <div className="flex items-center gap-3">
-            <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 w-16 flex-shrink-0">
+            <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-500 w-16 flex-shrink-0">
               Branche
             </span>
             <div className="flex items-center gap-2 flex-wrap">
@@ -134,7 +134,7 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
       </div>
 
       {/* ── Result count ────────────────────────────────────── */}
-      <p className="text-xs text-neutral-400 font-medium px-1">
+      <p className="text-xs text-neutral-600 font-medium px-1">
         {filtered.length} Artikel
         {(impact !== "all" || industry !== "all") && (
           <span className="ml-1.5 text-neutral-300">· gefiltert</span>
