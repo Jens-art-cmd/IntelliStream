@@ -4,6 +4,7 @@ try { require("dotenv").config(); } catch { /* dotenv optional */ }
 
 import { createServiceClient } from "../../../shared/src/db/client.ts";
 import { fetchRssFeed } from "./rss.js";
+import { discoverNewFeedUrl } from "./recovery.js";
 
 export interface SourceConfig {
   name: string;
@@ -11,19 +12,20 @@ export interface SourceConfig {
   trust_level: "official" | "media" | "blog";
 }
 
+const MAX_FAILURES_BEFORE_RECOVERY = 3;
+const MAX_FAILURES_BEFORE_BROKEN   = 10;
+
 /**
  * Normalisiert eine URL vor dem Datenbankvergleich:
  * - Query-Parameter entfernen (z.B. ?wt_mc=rss.red... von Heise)
  * - Trailing-Slash vereinheitlichen
  * - Fragment (#...) entfernen
- * Damit landen Heise Security + Heise Online nicht als Duplikate in der DB.
  */
 function normalizeUrl(raw: string): string {
   try {
     const u = new URL(raw);
     u.search = "";
     u.hash = "";
-    // Trailing slash normalisieren
     if (u.pathname.endsWith("/") && u.pathname.length > 1) {
       u.pathname = u.pathname.slice(0, -1);
     }
@@ -54,6 +56,17 @@ export async function runScout(industryId: number, sources: SourceConfig[], labe
 
       const sourceId = await getOrCreateSource(supabase!, industryId, source);
 
+      // ── Erfolg: Health-Counter zurücksetzen ────────────────
+      await supabase!
+        .from("sources")
+        .update({
+          consecutive_failures: 0,
+          health_status: "healthy",
+          last_health_check: new Date().toISOString(),
+          last_error: null,
+        })
+        .eq("id", sourceId);
+
       for (const item of items) {
         const normalizedUrl = normalizeUrl(item.url);
         const { error } = await supabase!.from("articles").insert({
@@ -80,12 +93,83 @@ export async function runScout(industryId: number, sources: SourceConfig[], labe
         .from("sources")
         .update({ last_crawled: new Date().toISOString() })
         .eq("id", sourceId);
+
     } catch (err) {
       console.error(`[Scout:${label}]   Error: ${err}`);
+
+      if (!DRY_RUN) {
+        await handleSourceFailure(supabase!, source, label, String(err));
+      }
     }
   }
 
   console.log(`\n[Scout:${label}] Done. New: ${totalNew}, Already known: ${totalSkipped}`);
+}
+
+/** Fehler verwalten: Zähler hochzählen, Recovery auslösen wenn nötig */
+async function handleSourceFailure(
+  supabase: ReturnType<typeof createServiceClient>,
+  source: SourceConfig,
+  label: string,
+  errorMsg: string,
+) {
+  // Aktuelle Fehlerzahl und Source-ID laden
+  const { data: row } = await supabase
+    .from("sources")
+    .select("id, consecutive_failures, health_status, url")
+    .eq("url", source.url)
+    .maybeSingle();
+
+  if (!row) return; // Quelle noch nicht in DB
+
+  const failures = (row.consecutive_failures ?? 0) + 1;
+  const now = new Date().toISOString();
+
+  // Fehlerzähler erhöhen
+  await supabase.from("sources").update({
+    consecutive_failures: failures,
+    last_error: errorMsg.substring(0, 500),
+    last_health_check: now,
+    health_status: failures >= MAX_FAILURES_BEFORE_BROKEN ? "broken" : "degraded",
+  }).eq("id", row.id);
+
+  console.warn(`[Scout:${label}]   ⚠ ${source.name}: ${failures} Fehler in Folge`);
+
+  // ── Auto-Recovery nach MAX_FAILURES_BEFORE_RECOVERY Fehlern ──
+  if (failures === MAX_FAILURES_BEFORE_RECOVERY) {
+    console.log(`[Scout:${label}]   🔍 Starte Auto-Recovery für "${source.name}"…`);
+
+    const newUrl = await discoverNewFeedUrl(
+      source.name,
+      row.url,
+      (msg) => console.log(`[Scout:${label}]   ${msg}`),
+    );
+
+    if (newUrl) {
+      console.log(`[Scout:${label}]   ✅ Neue URL gefunden: ${newUrl}`);
+      await supabase.from("sources").update({
+        url: newUrl,
+        consecutive_failures: 0,
+        health_status: "healthy",
+        last_error: `Auto-Recovery: URL aktualisiert von ${row.url} zu ${newUrl}`,
+        last_health_check: new Date().toISOString(),
+      }).eq("id", row.id);
+
+      // Quelle sofort mit neuer URL nochmal versuchen
+      try {
+        const items = await fetchRssFeed(newUrl);
+        console.log(`[Scout:${label}]   ✓ Neue URL liefert ${items.length} Items — Lauf erfolgreich`);
+      } catch (e) {
+        console.error(`[Scout:${label}]   Neue URL fehlgeschlagen: ${e}`);
+      }
+    } else {
+      console.warn(`[Scout:${label}]   ✗ Auto-Recovery erfolglos — "${source.name}" auf 'degraded' gesetzt`);
+    }
+  }
+
+  if (failures >= MAX_FAILURES_BEFORE_BROKEN) {
+    console.error(`[Scout:${label}]   🔴 "${source.name}" nach ${failures} Fehlern als 'broken' markiert`);
+  }
 }
 
 async function getOrCreateSource(
