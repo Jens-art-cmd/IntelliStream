@@ -60,11 +60,13 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
         background: "#e8eef5",
         color: "#b87200",
         fontWeight: 600,
+        border: "1.5px solid rgba(217, 119, 6, 0.45)",
       }
     : {
         boxShadow: "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
         background: "#e8eef5",
         color: "#4b5563",
+        border: "1.5px solid transparent",
       };
 
   return (

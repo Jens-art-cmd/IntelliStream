@@ -23,8 +23,14 @@ function NavLink({ href, label, children }: NavLinkProps) {
       }`}
       style={
         isActive
-          ? { boxShadow: "inset 3px 3px 7px #c0c5ce, inset -1px -1px 4px #ffffff", background: "#e8eef5" }
-          : undefined
+          ? {
+              boxShadow: "inset 3px 3px 7px #c0c5ce, inset -1px -1px 4px #ffffff",
+              background: "#e8eef5",
+              border: "1.5px solid rgba(217, 119, 6, 0.4)",
+            }
+          : {
+              border: "1.5px solid transparent",
+            }
       }
     >
       <span
