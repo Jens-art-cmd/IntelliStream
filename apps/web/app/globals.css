@@ -4,11 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --sidebar-width: 240px;
-  }
+/* ── Neumorphic base colour ──────────────────────────────── */
+:root {
+  --sidebar-width: 240px;
+  --neu-base:  #e8eef5;
+  --neu-dark:  #c5cad3;
+  --neu-light: #ffffff;
+}
 
+@layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -17,49 +21,78 @@
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900;
+    background-color: #e8eef5;
+    color: #374151;
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 4px;
-    height: 4px;
+  /* Soft scrollbar matching the base colour */
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: #c5cad3; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #adb4bf; }
+}
+
+@layer components {
+  /* ── Neumorphic surface — outset (raised card) */
+  .neu-card {
+    background: #e8eef5;
+    box-shadow: 8px 8px 16px #c5cad3, -8px -8px 16px #ffffff;
+    border-radius: 18px;
+    border: none;
   }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-neutral-200 rounded-full;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-300;
+  .neu-card-sm {
+    background: #e8eef5;
+    box-shadow: 4px 4px 8px #c5cad3, -4px -4px 8px #ffffff;
+    border-radius: 14px;
+    border: none;
   }
 
-  /* Sidebar scrollbar (dark) */
-  .sidebar-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,.1);
+  /* ── Neumorphic surface — inset (pressed / input) */
+  .neu-inset {
+    background: #e8eef5;
+    box-shadow: inset 4px 4px 8px #c5cad3, inset -4px -4px 8px #ffffff;
+    border-radius: 14px;
+    border: none;
   }
-  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,.18);
+  .neu-inset-sm {
+    background: #e8eef5;
+    box-shadow: inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff;
+    border-radius: 10px;
+    border: none;
+  }
+
+  /* ── Neumorphic pill button */
+  .neu-btn {
+    background: #e8eef5;
+    box-shadow: 4px 4px 8px #c5cad3, -4px -4px 8px #ffffff;
+    border-radius: 50px;
+    border: none;
+    transition: box-shadow .15s ease, transform .15s ease;
+  }
+  .neu-btn:hover {
+    box-shadow: 5px 5px 10px #c5cad3, -5px -5px 10px #ffffff;
+    transform: translateY(-1px);
+  }
+  .neu-btn:active,
+  .neu-btn-active {
+    box-shadow: inset 3px 3px 7px #c0c5ce, inset -1px -1px 4px #ffffff;
+    transform: translateY(0);
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 
-  /* Letter-spacing utilities */
   .tracking-tighter-xl { letter-spacing: -0.04em; }
   .tracking-tighter-lg { letter-spacing: -0.03em; }
   .tracking-tighter-md { letter-spacing: -0.02em; }
   .tracking-tight-sm   { letter-spacing: -0.015em; }
 
-  /* Impact accent bars — left border */
+  /* Impact accent bars — coloured left glow */
   .card-accent-high   { border-left: 3px solid #ef4444; }
   .card-accent-medium { border-left: 3px solid #f59e0b; }
   .card-accent-low    { border-left: 3px solid #22c55e; }
 
-  /* Gold glow ring (for active/selected states) */
+  /* Gold glow ring */
   .ring-gold { box-shadow: 0 0 0 3px rgba(255,179,0,.25); }
 }

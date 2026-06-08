@@ -18,24 +18,28 @@ function NavLink({ href, label, children }: NavLinkProps) {
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 mb-0.5 group ${
-        isActive
-          ? "bg-white/[0.08] text-amber-400"
-          : "text-slate-400 hover:text-white hover:bg-white/[0.05]"
+      className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[13px] font-medium transition-all duration-200 mb-1.5 group ${
+        isActive ? "text-amber-600" : "text-neutral-500 hover:text-neutral-700"
       }`}
+      style={
+        isActive
+          ? { boxShadow: "inset 3px 3px 7px #c0c5ce, inset -1px -1px 4px #ffffff", background: "#e8eef5" }
+          : undefined
+      }
     >
       <span
         className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-          isActive
-            ? "text-amber-400"
-            : "text-slate-500 group-hover:text-slate-300"
+          isActive ? "text-amber-500" : "text-neutral-400 group-hover:text-neutral-600"
         }`}
       >
         {children}
       </span>
       {label}
       {isActive && (
-        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+        <span
+          className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, #ffca28, #ff8f00)" }}
+        />
       )}
     </Link>
   );
@@ -43,8 +47,8 @@ function NavLink({ href, label, children }: NavLinkProps) {
 
 export default function SidebarNav() {
   return (
-    <nav className="flex-1 px-3 py-4 overflow-y-auto sidebar-scroll">
-      <p className="text-[10px] font-bold tracking-[.12em] uppercase px-3 py-1.5 mb-1 text-slate-600">
+    <nav className="flex-1 px-3 py-2 overflow-y-auto">
+      <p className="text-[10px] font-bold tracking-[.12em] uppercase px-3 py-1.5 mb-1 text-neutral-400">
         Hauptmenü
       </p>
       <NavLink href="/dashboard/feed" label="Mein Feed">
@@ -60,7 +64,7 @@ export default function SidebarNav() {
         <IconBookmark />
       </NavLink>
 
-      <p className="text-[10px] font-bold tracking-[.12em] uppercase px-3 py-1.5 mt-5 mb-1 text-slate-600">
+      <p className="text-[10px] font-bold tracking-[.12em] uppercase px-3 py-1.5 mt-5 mb-1 text-neutral-400">
         Konto
       </p>
       <NavLink href="/dashboard/settings" label="Einstellungen">
@@ -70,7 +74,7 @@ export default function SidebarNav() {
   );
 }
 
-/* ── Icons ─────────────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────── */
 function IconGrid() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="w-full h-full">
@@ -97,18 +101,18 @@ function IconBell() {
     </svg>
   );
 }
+function IconBookmark() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="w-full h-full">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
 function IconUser() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="w-full h-full">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-    </svg>
-  );
-}
-function IconBookmark() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="w-full h-full">
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
     </svg>
   );
 }

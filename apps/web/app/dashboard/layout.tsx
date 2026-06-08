@@ -13,58 +13,66 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const initials = email.slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex h-screen bg-neutral-50">
+    <div className="flex h-screen" style={{ background: "#e8eef5" }}>
 
-      {/* ── Sidebar ──────────────────────────────────────── */}
+      {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside
         className="w-[240px] flex-shrink-0 flex flex-col"
-        style={{ background: "#0d1424" }}
+        style={{
+          background: "#e8eef5",
+          boxShadow: "6px 0 20px #c5cad3, -2px 0 6px #ffffff",
+        }}
       >
-
         {/* Logo */}
-        <div className="px-4 py-5 border-b border-white/[0.05]">
+        <div className="px-5 py-5 mb-1">
           <div className="flex items-center gap-3">
-            {/* Gold gradient mark */}
+            {/* Gold neumorphic logo mark */}
             <div
-              className="w-8 h-8 rounded-[9px] flex items-center justify-center flex-shrink-0 shadow-sm"
-              style={{ background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)" }}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)",
+                boxShadow: "4px 4px 8px #c5cad3, -2px -2px 6px #ffffff",
+              }}
             >
-              <span className="text-[11px] font-black tracking-tight text-white drop-shadow-sm">IS</span>
+              <span className="text-[12px] font-black tracking-tight text-white drop-shadow-sm">IS</span>
             </div>
             <div>
-              <p className="text-[14.5px] font-bold tracking-tight text-white leading-none">
+              <p className="text-[14px] font-bold tracking-tight text-neutral-700 leading-none">
                 IntelliStream
               </p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-none font-medium">
+              <p className="text-[10px] text-neutral-400 mt-0.5 leading-none font-medium">
                 Fachinformation · KI
               </p>
             </div>
           </div>
         </div>
 
-        {/* Navigation (client component for active states) */}
+        {/* Navigation */}
         <SidebarNav />
 
         {/* User footer */}
-        <div className="px-3 pb-4 pt-3 border-t border-white/[0.05]">
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg mb-0.5">
-            {/* Avatar with gold gradient */}
+        <div className="px-4 pb-5 pt-3">
+          {/* User pill */}
+          <div
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl mb-2"
+            style={{ boxShadow: "inset 3px 3px 6px #c5cad3, inset -3px -3px 6px #ffffff" }}
+          >
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0 shadow-sm"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
               style={{ background: "linear-gradient(135deg, #ffca28 0%, #e08900 100%)" }}
             >
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-medium truncate text-slate-400">{email}</p>
+              <p className="text-[11px] font-medium truncate text-neutral-500">{email}</p>
             </div>
           </div>
           <LogoutButton />
         </div>
       </aside>
 
-      {/* ── Main content ─────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto bg-neutral-50">
+      {/* ── Main content ────────────────────────────────────── */}
+      <main className="flex-1 overflow-y-auto" style={{ background: "#e8eef5" }}>
         {children}
       </main>
     </div>

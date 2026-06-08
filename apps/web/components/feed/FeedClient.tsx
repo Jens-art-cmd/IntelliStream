@@ -30,11 +30,11 @@ interface Props {
   bookmarkedIds?: Set<string>;
 }
 
-const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; color?: string }[] = [
+const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; dot?: string }[] = [
   { value: "all",    label: "Alle" },
-  { value: "high",   label: "Hoch",    color: "#ef4444" },
-  { value: "medium", label: "Mittel",  color: "#f59e0b" },
-  { value: "low",    label: "Gering",  color: "#22c55e" },
+  { value: "high",   label: "Hoch",    dot: "#ef4444" },
+  { value: "medium", label: "Mittel",  dot: "#f59e0b" },
+  { value: "low",    label: "Gering",  dot: "#22c55e" },
 ];
 
 export default function FeedClient({ articles, industries, bookmarkedIds = new Set() }: Props) {
@@ -54,32 +54,48 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
     });
   }, [articles, impact, industry]);
 
+  const filterBtnStyle = (active: boolean) => active
+    ? {
+        boxShadow: "inset 3px 3px 6px #c0c5ce, inset -1px -1px 4px #ffffff",
+        background: "#e8eef5",
+        color: "#b87200",
+        fontWeight: 600,
+      }
+    : {
+        boxShadow: "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
+        background: "#e8eef5",
+        color: "#6b7280",
+      };
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
 
-      {/* ── Filter bar ──────────────────────────────────── */}
-      <div className="bg-white border border-neutral-100 rounded-xl px-4 py-3.5 space-y-3 shadow-xs">
-
+      {/* ── Filter bar ──────────────────────────────────────── */}
+      <div
+        className="px-5 py-4 space-y-3"
+        style={{
+          background: "#e8eef5",
+          boxShadow: "8px 8px 16px #c5cad3, -8px -8px 16px #ffffff",
+          borderRadius: "18px",
+        }}
+      >
         {/* Impact filter */}
         <div className="flex items-center gap-3">
           <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 w-16 flex-shrink-0">
             Impact
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2 flex-wrap">
             {IMPACT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setImpact(opt.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                  impact === opt.value
-                    ? "bg-neutral-900 text-white shadow-sm"
-                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all duration-150"
+                style={filterBtnStyle(impact === opt.value)}
               >
-                {opt.color && (
+                {opt.dot && (
                   <span
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: opt.color }}
+                    style={{ background: opt.dot }}
                   />
                 )}
                 {opt.label}
@@ -94,14 +110,11 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
             <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 w-16 flex-shrink-0">
               Branche
             </span>
-            <div className="flex items-center gap-1 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setIndustry("all")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                  industry === "all"
-                    ? "bg-neutral-900 text-white shadow-sm"
-                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
-                }`}
+                className="px-3 py-1.5 rounded-full text-xs transition-all duration-150"
+                style={filterBtnStyle(industry === "all")}
               >
                 Alle
               </button>
@@ -109,11 +122,8 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
                 <button
                   key={ind.id}
                   onClick={() => setIndustry(ind.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
-                    industry === ind.id
-                      ? "bg-neutral-900 text-white shadow-sm"
-                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
-                  }`}
+                  className="px-3 py-1.5 rounded-full text-xs transition-all duration-150"
+                  style={filterBtnStyle(industry === ind.id)}
                 >
                   {ind.name}
                 </button>
@@ -123,39 +133,46 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
         )}
       </div>
 
-      {/* ── Result count ────────────────────────────────── */}
-      <p className="text-xs text-neutral-400 font-medium">
+      {/* ── Result count ────────────────────────────────────── */}
+      <p className="text-xs text-neutral-400 font-medium px-1">
         {filtered.length} Artikel
         {(impact !== "all" || industry !== "all") && (
           <span className="ml-1.5 text-neutral-300">· gefiltert</span>
         )}
       </p>
 
-      {/* ── Articles ────────────────────────────────────── */}
+      {/* ── Articles ────────────────────────────────────────── */}
       {filtered.length === 0 ? (
-        <div className="bg-white border border-neutral-100 rounded-xl text-center py-14 px-6">
+        <div
+          className="text-center py-14 px-6"
+          style={{
+            background: "#e8eef5",
+            boxShadow: "8px 8px 16px #c5cad3, -8px -8px 16px #ffffff",
+            borderRadius: "18px",
+          }}
+        >
           <div className="text-3xl mb-3">🔍</div>
-          <p className="text-sm font-medium text-neutral-700 mb-1">Keine Artikel für diese Filterauswahl</p>
+          <p className="text-sm font-medium text-neutral-600 mb-1">Keine Artikel für diese Filterauswahl</p>
           <button
             onClick={() => { setImpact("all"); setIndustry("all"); }}
-            className="text-sm text-brand-600 font-medium hover:underline mt-2"
+            className="text-sm text-amber-600 font-medium hover:underline mt-2"
           >
             Filter zurücksetzen
           </button>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {filtered.map((article) => (
             <ArticleCard key={article.id} article={article} isBookmarked={bookmarkedIds.has(article.id)} />
           ))}
         </div>
       )}
 
-      {/* ── Load-more hint ──────────────────────────────── */}
+      {/* ── Load-more hint ──────────────────────────────────── */}
       {articles.length >= 30 && (
         <p className="text-center text-xs text-neutral-400 pt-3 pb-2">
           Zeige die 30 neuesten Artikel je Branche.{" "}
-          <Link href="/dashboard/search" className="text-brand-600 font-semibold hover:underline">
+          <Link href="/dashboard/search" className="text-amber-600 font-semibold hover:underline">
             Zur Suche →
           </Link>
         </p>

@@ -50,13 +50,17 @@ export default function BookmarkButton({ articleId, initialBookmarked, size = "s
       onClick={toggle}
       disabled={isPending}
       title={bookmarked ? "Lesezeichen entfernen" : "Lesezeichen setzen"}
-      className={`flex items-center justify-center rounded-lg transition-all duration-200 flex-shrink-0 ${
+      className={`flex items-center justify-center transition-all duration-200 flex-shrink-0 ${
         size === "md" ? "w-9 h-9" : "w-7 h-7"
-      } ${
-        bookmarked
-          ? "text-amber-500 bg-amber-50 hover:bg-amber-100"
-          : "text-neutral-300 hover:text-amber-400 hover:bg-amber-50"
       } ${isPending ? "opacity-60" : ""}`}
+      style={{
+        borderRadius: "10px",
+        background: "#e8eef5",
+        boxShadow: bookmarked
+          ? "inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff"
+          : "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
+        color: bookmarked ? "#f59e0b" : "#9aa2b1",
+      }}
     >
       <svg
         className={iconSize}

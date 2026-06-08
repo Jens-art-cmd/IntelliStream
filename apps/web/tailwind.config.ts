@@ -9,7 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary navy (deep enterprise blue — Skai-inspired)
+        // Neumorphic base palette
+        neu: {
+          base:  "#e8eef5",   // main background
+          dark:  "#c5cad3",   // dark shadow
+          light: "#ffffff",   // light shadow
+          mid:   "#d4d9e3",   // subtle dividers
+        },
+        // Brand blue (for links/accents inside light bg)
         brand: {
           50:  "#f0f4fc",
           100: "#dce5f7",
@@ -23,7 +30,7 @@ const config: Config = {
           900: "#0c1a3e",
           950: "#060d22",
         },
-        // Gold accent — Skai's signature CTA / highlight color
+        // Gold accent
         gold: {
           50:  "#fffbeb",
           100: "#fff3c4",
@@ -35,13 +42,6 @@ const config: Config = {
           700: "#b87200",
           800: "#965808",
           900: "#7a450d",
-        },
-        // Dark navy — sidebar / hero sections
-        navy: {
-          700: "#1a2c4e",
-          800: "#0f1c34",
-          900: "#0d1424",
-          950: "#080d18",
         },
         neutral: {
           0:   "#ffffff",
@@ -70,15 +70,23 @@ const config: Config = {
         lg:   "14px",
         xl:   "18px",
         "2xl": "24px",
+        "3xl": "32px",
       },
       boxShadow: {
+        // Neumorphic shadows
+        "neu":        "8px 8px 16px #c5cad3, -8px -8px 16px #ffffff",
+        "neu-sm":     "4px 4px 8px #c5cad3, -4px -4px 8px #ffffff",
+        "neu-xs":     "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
+        "neu-lg":     "12px 12px 24px #c5cad3, -12px -12px 24px #ffffff",
+        "neu-inset":  "inset 4px 4px 8px #c5cad3, inset -4px -4px 8px #ffffff",
+        "neu-inset-sm": "inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff",
+        "neu-active": "inset 3px 3px 7px #c0c5ce, inset -1px -1px 4px #ffffff",
+        // Legacy / utility
         xs:        "0 1px 2px rgba(0,0,0,.05)",
         sm:        "0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04)",
         md:        "0 4px 8px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04)",
         lg:        "0 10px 20px rgba(0,0,0,.09), 0 4px 8px rgba(0,0,0,.05)",
-        xl:        "0 20px 30px rgba(0,0,0,.1), 0 8px 12px rgba(0,0,0,.06)",
-        "gold-sm": "0 0 0 3px rgba(255,179,0,.2)",
-        "gold-md": "0 0 0 4px rgba(255,179,0,.15)",
+        "gold-glow": "0 0 0 3px rgba(255,179,0,.25)",
         "card":    "0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04)",
         "card-hover": "0 8px 24px rgba(0,0,0,.09), 0 2px 6px rgba(0,0,0,.05)",
       },
