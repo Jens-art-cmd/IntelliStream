@@ -28,6 +28,26 @@ runScout(INDUSTRY_ID, [
     url: "https://www.datenschutz-praxis.de/feed/",
     trust_level: "media",
   },
+  {
+    name: "LTO — Legal Tribune Online",
+    url: "https://www.lto.de/feed/",
+    trust_level: "media",
+  },
+  {
+    name: "Compliance-Magazin",
+    url: "https://www.compliance-magazin.de/feed/",
+    trust_level: "media",
+  },
+  {
+    name: "Bundesrat — Aktuelles",
+    url: "https://www.bundesrat.de/DE/service/rss/aktuelles/aktuelles_node.xml",
+    trust_level: "official",
+  },
+  {
+    name: "EUR-Lex — Neue Rechtsakte",
+    url: "https://eur-lex.europa.eu/rss/news.xml",
+    trust_level: "official",
+  },
 ], "Recht & Compliance").catch((err) => {
   console.error("[Scout:Recht] Fatal:", err);
   process.exit(1);

@@ -28,6 +28,16 @@ runScout(INDUSTRY_ID, [
     url: "https://www.infopoint-security.de/rss/",
     trust_level: "media",
   },
+  {
+    name: "BSI — Cybersicherheitswarnungen",
+    url: "https://www.bsi.bund.de/SiteGlobals/Functions/RSSFeed/RSSNewsfeed/RSS_Cybersicherheitswarnungen.xml",
+    trust_level: "official",
+  },
+  {
+    name: "BSI — Pressemitteilungen",
+    url: "https://www.bsi.bund.de/SiteGlobals/Functions/RSSFeed/RSSNewsfeed/RSS_Pressemitteilungen.xml",
+    trust_level: "official",
+  },
 ], "IT & Cybersecurity").catch((err) => {
   console.error("[Scout:IT] Fatal:", err);
   process.exit(1);
