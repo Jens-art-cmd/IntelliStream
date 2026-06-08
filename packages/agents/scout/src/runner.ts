@@ -11,6 +11,28 @@ export interface SourceConfig {
   trust_level: "official" | "media" | "blog";
 }
 
+/**
+ * Normalisiert eine URL vor dem Datenbankvergleich:
+ * - Query-Parameter entfernen (z.B. ?wt_mc=rss.red... von Heise)
+ * - Trailing-Slash vereinheitlichen
+ * - Fragment (#...) entfernen
+ * Damit landen Heise Security + Heise Online nicht als Duplikate in der DB.
+ */
+function normalizeUrl(raw: string): string {
+  try {
+    const u = new URL(raw);
+    u.search = "";
+    u.hash = "";
+    // Trailing slash normalisieren
+    if (u.pathname.endsWith("/") && u.pathname.length > 1) {
+      u.pathname = u.pathname.slice(0, -1);
+    }
+    return u.toString();
+  } catch {
+    return raw;
+  }
+}
+
 export async function runScout(industryId: number, sources: SourceConfig[], label: string) {
   const DRY_RUN = process.env["DRY_RUN"] === "true";
   console.log(`[Scout:${label}] Starting${DRY_RUN ? " (dry run)" : ""}…`);
@@ -33,8 +55,9 @@ export async function runScout(industryId: number, sources: SourceConfig[], labe
       const sourceId = await getOrCreateSource(supabase!, industryId, source);
 
       for (const item of items) {
+        const normalizedUrl = normalizeUrl(item.url);
         const { error } = await supabase!.from("articles").insert({
-          source_url: item.url,
+          source_url: normalizedUrl,
           title: item.title,
           industry_id: industryId,
           source_id: sourceId,
