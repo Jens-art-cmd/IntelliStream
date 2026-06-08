@@ -1,5 +1,21 @@
 import { runScout } from "./runner.js";
 
+/**
+ * Energie & Erneuerbare — Scout
+ *
+ * Zielgruppe: Energiewirtschafts-Manager, Netzoperatoren, EEG-Compliance-Verantwortliche,
+ *   Investoren in Solar/Wind/Speicher, Stadtwerke-Führungskräfte, Energieberater,
+ *   Projektentwickler Erneuerbare
+ *
+ * Relevanzkriterien:
+ *   ✔ Regulatorik: EEG, EnWG, GEG, EU-Beihilferecht, RED III
+ *   ✔ BNetzA-Entscheidungen: Netzausbau, Ausschreibungsergebnisse, Netzentgelte
+ *   ✔ Förderprogramme BAFA/KfW — Öffnungen, Änderungen, Stopps
+ *   ✔ Strommarkt: EPEX-Extrempreise, Kapazitätsmärkte, Marktkopplung
+ *   ✔ Technologie: Speicher, Wasserstoff, Offshore-Wind, Agri-PV
+ *   ✗ Allgemeine Wirtschaftsberichte, Konsumthemen, internationale News ohne DE/EU-Bezug
+ */
+
 const INDUSTRY_ID = 1; // Energie & Erneuerbare
 
 runScout(INDUSTRY_ID, [
@@ -14,6 +30,11 @@ runScout(INDUSTRY_ID, [
   {
     name: "BMWK — Pressemitteilungen",
     url: "https://www.bmwk.de/SiteGlobals/Functions/RSSFeed/DE/Presse/RSSNewsfeed_Presse.xml",
+    trust_level: "official",
+  },
+  {
+    name: "BWE — Pressemitteilungen",
+    url: "https://www.wind-energie.de/presse/pressemitteilungen/rss/",
     trust_level: "official",
   },
 ], "Energie").catch((err) => {

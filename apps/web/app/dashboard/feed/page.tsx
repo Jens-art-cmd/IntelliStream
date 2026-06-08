@@ -56,6 +56,7 @@ export default async function FeedPage() {
         .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
         .eq("industry_id", id)
         .not("summary_medium", "is", null)
+        .eq("is_suppressed", false)
         .order("published_at", { ascending: false })
         .limit(ARTICLES_PER_INDUSTRY),
     ),

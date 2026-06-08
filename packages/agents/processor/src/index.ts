@@ -9,6 +9,7 @@ import { summarizeArticle, processArticle } from "./claude.ts";
 const DRY_RUN = process.env["DRY_RUN"] === "true";
 const BATCH_SIZE = 10;
 const DELAY_MS = 1_500; // stay well within Claude rate limits
+const MIN_PUBLISH_SCORE = 45; // Artikel unterhalb dieser Grenze werden unterdrückt
 
 async function getIndustryMeta(
   supabase: ReturnType<typeof createServiceClient>,
@@ -80,6 +81,11 @@ async function run() {
       console.log(`[Processor]   score=${result.relevance_score} impact=${result.impact_level} tags=${result.tags.join(",")}`);
 
       // 4. Write back to DB
+      const suppressed = result.relevance_score < MIN_PUBLISH_SCORE;
+      if (suppressed) {
+        console.log(`[Processor]   ⚫ Unterdrückt (score=${result.relevance_score} < ${MIN_PUBLISH_SCORE}): ${article.title.slice(0, 60)}`);
+      }
+
       const { error: updateError } = await supabase
         .from("articles")
         .update({
@@ -91,6 +97,7 @@ async function run() {
           impact_reason: result.impact_reason,
           tags: result.tags,
           is_breaking: result.is_breaking,
+          is_suppressed: suppressed,
           processed_at: new Date().toISOString(),
         })
         .eq("id", article.id);
