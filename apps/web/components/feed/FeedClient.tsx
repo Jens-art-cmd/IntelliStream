@@ -58,7 +58,7 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
     ? {
         boxShadow: "inset 3px 3px 6px #c0c5ce, inset -1px -1px 4px #ffffff",
         background: "#e8eef5",
-        color: "#b87200",
+        color: "#1f2937",
         fontWeight: 600,
         border: "1.5px solid rgba(217, 119, 6, 0.45)",
       }
