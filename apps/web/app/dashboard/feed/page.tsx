@@ -47,8 +47,9 @@ export default async function FeedPage() {
     );
   }
 
-  const [industriesResult, ...articleResults] = await Promise.all([
+  const [industriesResult, bookmarksResult, ...articleResults] = await Promise.all([
     supabase.from("industries").select("id, name").in("id", industryIds),
+    supabase.from("bookmarks").select("article_id").eq("user_id", user.id),
     ...industryIds.map((id) =>
       supabase
         .from("articles")
@@ -61,6 +62,8 @@ export default async function FeedPage() {
   ]);
 
   const industries = industriesResult.data ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bookmarkedIds = new Set<string>((bookmarksResult.data ?? []).map((b: any) => b.article_id as string));
   const articles = articleResults
     .flatMap((r) => r.data ?? [])
     .sort((a, b) => {
@@ -118,7 +121,7 @@ export default async function FeedPage() {
           </Link>
         </div>
       ) : (
-        <FeedClient articles={articles} industries={industries} />
+        <FeedClient articles={articles} industries={industries} bookmarkedIds={bookmarkedIds} />
       )}
     </div>
   );

@@ -27,6 +27,7 @@ interface Industry {
 interface Props {
   articles: Article[];
   industries: Industry[];
+  bookmarkedIds?: Set<string>;
 }
 
 const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; color?: string }[] = [
@@ -36,7 +37,7 @@ const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; color?: strin
   { value: "low",    label: "Gering",  color: "#22c55e" },
 ];
 
-export default function FeedClient({ articles, industries }: Props) {
+export default function FeedClient({ articles, industries, bookmarkedIds = new Set() }: Props) {
   const [impact, setImpact]     = useState<ImpactLevel | "all">("all");
   const [industry, setIndustry] = useState<number | "all">("all");
 
@@ -145,7 +146,7 @@ export default function FeedClient({ articles, industries }: Props) {
       ) : (
         <div className="space-y-2.5">
           {filtered.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+            <ArticleCard key={article.id} article={article} isBookmarked={bookmarkedIds.has(article.id)} />
           ))}
         </div>
       )}

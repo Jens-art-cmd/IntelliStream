@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ImpactLevel } from "@/types/database";
+import BookmarkButton from "./BookmarkButton";
 
 interface ArticleCardProps {
   article: {
@@ -15,6 +16,7 @@ interface ArticleCardProps {
     is_breaking: boolean;
     source_url: string;
   };
+  isBookmarked?: boolean;
 }
 
 const IMPACT_BADGE: Record<ImpactLevel, { bg: string; text: string; border: string; dot: string; label: string }> = {
@@ -29,7 +31,7 @@ const ACCENT_CLASS: Record<ImpactLevel, string> = {
   low:    "card-accent-low",
 };
 
-export default function ArticleCard({ article }: ArticleCardProps) {
+export default function ArticleCard({ article, isBookmarked = false }: ArticleCardProps) {
   const publishedDate = article.published_at
     ? new Date(article.published_at).toLocaleDateString("de-DE", {
         day: "2-digit",
@@ -67,11 +69,14 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             </span>
           )}
         </div>
-        {publishedDate && (
-          <span className="text-2xs text-neutral-400 flex-shrink-0 tabular-nums font-medium">
-            {publishedDate}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {publishedDate && (
+            <span className="text-2xs text-neutral-400 tabular-nums font-medium">
+              {publishedDate}
+            </span>
+          )}
+          <BookmarkButton articleId={article.id} initialBookmarked={isBookmarked} />
+        </div>
       </div>
 
       {/* Title */}
