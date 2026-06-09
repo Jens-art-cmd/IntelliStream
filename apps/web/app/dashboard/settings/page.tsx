@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import IndustrySelector from "@/components/dashboard/IndustrySelector";
 import UpgradeButton from "@/components/dashboard/UpgradeButton";
 import UpgradeNotification from "@/components/dashboard/UpgradeNotification";
-import { getTrialInfo } from "@intellistream/shared";
+import { getTrialInfo } from "@/lib/trial";
 
 export const metadata: Metadata = { title: "Einstellungen · IntelliStream" };
 

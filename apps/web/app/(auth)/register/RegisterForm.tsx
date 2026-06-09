@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
-import { isBusinessEmail, BUSINESS_EMAIL_ERROR } from "@intellistream/shared";
+import { isBusinessEmail, BUSINESS_EMAIL_ERROR } from "@/lib/business-email";
 
 export default function RegisterForm() {
   const router = useRouter();

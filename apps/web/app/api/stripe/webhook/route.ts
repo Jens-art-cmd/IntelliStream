@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { createServiceClient } from "@intellistream/shared";
+import { createClient } from "@supabase/supabase-js";
 import type Stripe from "stripe";
 
 /**
@@ -34,7 +34,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const supabase = createServiceClient();
+  const supabase = createClient(
+    process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+    process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+  );
 
   // ── Plan-Mapping: Stripe Price ID → IntelliStream Plan ──────────────────
   const planMap: Record<string, "starter" | "pro" | "enterprise"> = {
