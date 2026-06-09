@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   if (!q) return NextResponse.json({ results: [], query: "" });
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   // Volltext-only
   if (mode === "fulltext") {

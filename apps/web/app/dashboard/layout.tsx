@@ -6,7 +6,7 @@ import TrialBanner from "@/components/dashboard/TrialBanner";
 import { getTrialInfo } from "../../../../packages/shared/src/trial";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) redirect("/login");

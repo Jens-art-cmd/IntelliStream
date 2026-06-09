@@ -8,7 +8,7 @@ import BookmarkButton from "@/components/feed/BookmarkButton";
 interface Props { params: { id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data } = await supabase.from("articles").select("title").eq("id", params.id).single();
   return { title: data?.title ?? "Artikel" };
 }
@@ -20,7 +20,7 @@ const IMPACT_BADGE: Record<ImpactLevel, { bg: string; text: string; border: stri
 };
 
 export default async function ArticleDetailPage({ params }: Props) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data: article } = await supabase.from("articles").select("*").eq("id", params.id).single();
 
   if (!article) notFound();

@@ -6,7 +6,7 @@ import ArticleCard from "@/components/feed/ArticleCard";
 export const metadata: Metadata = { title: "Lesezeichen · IntelliStream" };
 
 export default async function BookmarksPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 

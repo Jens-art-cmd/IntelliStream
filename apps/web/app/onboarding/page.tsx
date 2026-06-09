@@ -6,7 +6,7 @@ import OnboardingFlow from "./OnboardingFlow";
 export const metadata: Metadata = { title: "Branchen auswählen" };
 
 export default async function OnboardingPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/login");
 

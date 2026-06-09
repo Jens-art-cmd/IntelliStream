@@ -13,10 +13,11 @@
     "@intellistream/shared": "*",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.3",
-    "next": "14.2.5",
+    "next": "^16.3.0-preview.0",
     "openai": "^6.42.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "stripe": "^22.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",

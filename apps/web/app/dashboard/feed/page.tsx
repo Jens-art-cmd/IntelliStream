@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Mein Feed · IntelliStream" };
 const ARTICLES_PER_INDUSTRY = 30;
 
 export default async function FeedPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
