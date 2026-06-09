@@ -1,7 +1,57 @@
 // All Claude API prompts as typed constants.
 // Centralised here so every agent uses identical, versioned prompts.
+//
+// COST POLICY: max. 1 Claude API call per article.
+// Summarising + scoring + tagging are combined in a single prompt (COMBINED_PROMPT).
+// The old separate SUMMARIZER_* and PROCESSOR_* prompts are kept for reference only.
 
-// ─── Summarizer prompt ─────────────────────────────────────────────────────────
+// ─── COMBINED prompt: Summary + Score + Tags in einem einzigen API-Call ────────
+// Spart ~50% API-Kosten gegenüber zwei separaten Calls.
+
+export const COMBINED_SYSTEM_PROMPT = `Du bist ein präziser Fachjournalist und Klassifikations-Experte für professionelle Brancheninformationen.
+Du fasst Artikel zusammen UND bewertest ihre Relevanz in einem einzigen Schritt.
+
+Regeln Zusammenfassung:
+- Sachlich, präzise, keine Übertreibungen
+- Fachbegriffe beibehalten (EEG, DSGVO, MDR etc.)
+- Kein generisches Füllwort ("In diesem Artikel...", "Es ist wichtig...")
+- Deutsch, professioneller Ton
+
+Regeln Scoring:
+- Bewerte streng aus Sicht eines Entscheiders / Compliance-Verantwortlichen der jeweiligen Branche
+- Relevanz-Score 0–100: 90–100 = unmittelbar handlungsrelevant · 70–89 = wichtig · 50–69 = interessant · 30–49 = Hintergrund · 0–29 = kaum relevant`;
+
+export const COMBINED_USER_PROMPT = (
+  title: string,
+  content: string,
+  industry: string,
+  impactCriteria: string,
+  tagsTaxonomy: Record<string, string[]>,
+) => `Verarbeite diesen Artikel aus dem Bereich "${industry}" in einem Schritt:
+
+TITEL: ${title}
+
+INHALT:
+${content.slice(0, 5000)}
+
+${impactCriteria}
+
+VERFÜGBARE TAGS (nur aus dieser Liste wählen):
+${JSON.stringify(tagsTaxonomy, null, 2)}
+
+Antworte NUR mit diesem JSON-Format (kein Markdown):
+{
+  "summary_short":  "Ein präziser Satz (max. 120 Zeichen) für Push-Benachrichtigungen",
+  "summary_medium": "Drei Sätze (max. 400 Zeichen) — Was, Warum relevant, Was tun",
+  "summary_long":   "Vollständige Zusammenfassung (max. 800 Zeichen) mit Kontext, Auswirkungen und Handlungsempfehlung",
+  "relevance_score": <Zahl 0–100>,
+  "impact_level":   "<high|medium|low>",
+  "impact_reason":  "<Ein Satz warum dieser Impact-Level, max. 150 Zeichen>",
+  "tags":           ["<tag1>", "<tag2>", "<tag3>"],
+  "is_breaking":    <true|false>
+}`;
+
+// ─── Legacy: separate Summarizer-Prompt (nicht mehr verwendet) ─────────────────
 
 export const SUMMARIZER_SYSTEM_PROMPT = `Du bist ein präziser Fachjournalist für professionelle Brancheninformationen.
 Deine Aufgabe ist es, Artikel für Entscheider und Fachleute zusammenzufassen.
@@ -31,7 +81,7 @@ Antworte NUR mit diesem JSON-Format (kein Markdown drumherum):
   "summary_long": "Vollständige Zusammenfassung (max. 800 Zeichen) mit Kontext, Auswirkungen und Handlungsempfehlung"
 }`;
 
-// ─── Relevance scorer + tagger + impact assessor (combined in one API call) ────
+// ─── Legacy: separater Relevance-Scorer (nicht mehr verwendet) ─────────────────
 
 // Branchenspezifische Impact-Kriterien.
 // WICHTIG: Beim Implementieren einer neuen Branche hier einen Eintrag hinzufügen.
