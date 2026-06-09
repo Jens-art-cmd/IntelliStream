@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import SidebarNav from "@/components/dashboard/SidebarNav";
 import LogoutButton from "@/components/dashboard/LogoutButton";
+import TrialBanner from "@/components/dashboard/TrialBanner";
+import { getTrialInfo } from "../../../../packages/shared/src/trial";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createSupabaseServerClient();
@@ -11,6 +13,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const email = session.user.email ?? "";
   const initials = email.slice(0, 2).toUpperCase();
+
+  const { data: userData } = await supabase
+    .from("users")
+    .select("plan, trial_ends_at")
+    .eq("id", session.user.id)
+    .single();
+
+  const trialInfo = getTrialInfo({
+    plan: userData?.plan ?? "free",
+    trial_ends_at: userData?.trial_ends_at,
+  });
 
   return (
     <div className="flex h-screen" style={{ background: "#e8eef5" }}>
@@ -73,6 +86,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
       {/* ── Main content ────────────────────────────────────── */}
       <main className="flex-1 overflow-y-auto" style={{ background: "#e8eef5" }}>
+        <div className="max-w-3xl mx-auto px-6 pt-5">
+          <TrialBanner status={trialInfo.status} daysLeft={trialInfo.daysLeft} />
+        </div>
         {children}
       </main>
     </div>

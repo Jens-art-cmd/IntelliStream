@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import FeedClient from "@/components/feed/FeedClient";
+import { getTrialInfo } from "../../../../../packages/shared/src/trial";
 
 export const metadata: Metadata = { title: "Mein Feed · IntelliStream" };
 
@@ -14,11 +15,18 @@ export default async function FeedPage() {
 
   const { data: userData } = await supabase
     .from("users")
-    .select("industry_subscriptions, plan")
+    .select("industry_subscriptions, plan, trial_ends_at")
     .eq("id", user.id)
     .single();
 
   const industryIds: number[] = userData?.industry_subscriptions ?? [];
+
+  const trialInfo = getTrialInfo({
+    plan: userData?.plan ?? "free",
+    trial_ends_at: userData?.trial_ends_at,
+  });
+
+  const effectiveIndustryIds = trialInfo.isFullAccess ? industryIds : industryIds.slice(0, 1);
 
   if (industryIds.length === 0) {
     return (
@@ -48,9 +56,9 @@ export default async function FeedPage() {
   }
 
   const [industriesResult, bookmarksResult, ...articleResults] = await Promise.all([
-    supabase.from("industries").select("id, name").in("id", industryIds),
+    supabase.from("industries").select("id, name").in("id", effectiveIndustryIds),
     supabase.from("bookmarks").select("article_id").eq("user_id", user.id),
-    ...industryIds.map((id) =>
+    ...effectiveIndustryIds.map((id) =>
       supabase
         .from("articles")
         .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
@@ -106,6 +114,16 @@ export default async function FeedPage() {
           Branchen
         </Link>
       </div>
+
+      {/* ── Free plan industry limit notice ──────────────── */}
+      {!trialInfo.isFullAccess && industryIds.length > 1 && (
+        <p className="text-xs text-neutral-500 mb-4 mt-1">
+          Im kostenlosen Zugang wird 1 Branche angezeigt.{" "}
+          <Link href="/dashboard/settings" className="text-amber-600 font-semibold hover:underline">
+            Upgrade für alle {industryIds.length} Branchen
+          </Link>
+        </p>
+      )}
 
       {/* ── Content ──────────────────────────────────────── */}
       {articles.length === 0 ? (
