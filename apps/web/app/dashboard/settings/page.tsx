@@ -10,8 +10,9 @@ export const metadata: Metadata = { title: "Einstellungen · IntelliStream" };
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: { upgrade?: string };
+  searchParams: Promise<{ upgrade?: string }>;
 }) {
+  const resolvedParams = await searchParams;
   const supabase = await createSupabaseServerClient();
 
   const [
@@ -35,7 +36,7 @@ export default async function SettingsPage({
     <div className="max-w-2xl mx-auto px-6 py-7">
 
       {/* ── Upgrade-Rückmeldung (success / cancelled) ────── */}
-      <UpgradeNotification status={searchParams.upgrade} />
+      <UpgradeNotification status={resolvedParams.upgrade} />
 
       {/* ── Page header ──────────────────────────────────── */}
       <div className="mb-7">

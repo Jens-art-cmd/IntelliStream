@@ -5,11 +5,13 @@ import type { ImpactLevel } from "@/types/database";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import BookmarkButton from "@/components/feed/BookmarkButton";
 
-interface Props { params: { id: string } }
+// Next.js 15: params ist ein Promise
+interface Props { params: Promise<{ id: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
   const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.from("articles").select("title").eq("id", params.id).single();
+  const { data } = await supabase.from("articles").select("title").eq("id", id).single();
   return { title: data?.title ?? "Artikel" };
 }
 
@@ -20,8 +22,9 @@ const IMPACT_BADGE: Record<ImpactLevel, { bg: string; text: string; border: stri
 };
 
 export default async function ArticleDetailPage({ params }: Props) {
+  const { id } = await params;
   const supabase = await createSupabaseServerClient();
-  const { data: article } = await supabase.from("articles").select("*").eq("id", params.id).single();
+  const { data: article } = await supabase.from("articles").select("*").eq("id", id).single();
 
   if (!article) notFound();
 
@@ -31,7 +34,7 @@ export default async function ArticleDetailPage({ params }: Props) {
   // Bookmark-Status für diesen User laden
   const { data: { user } } = await supabase.auth.getUser();
   const { data: bm } = user
-    ? await supabase.from("bookmarks").select("id").eq("user_id", user.id).eq("article_id", params.id).maybeSingle()
+    ? await supabase.from("bookmarks").select("id").eq("user_id", user.id).eq("article_id", id).maybeSingle()
     : { data: null };
   const isBookmarked = !!bm;
 
@@ -49,7 +52,7 @@ export default async function ArticleDetailPage({ params }: Props) {
           </svg>
           Zurück zum Feed
         </Link>
-        <BookmarkButton articleId={params.id} initialBookmarked={isBookmarked} size="md" />
+        <BookmarkButton articleId={id} initialBookmarked={isBookmarked} size="md" />
       </div>
 
       {/* ── Badges ───────────────────────────────────────── */}
