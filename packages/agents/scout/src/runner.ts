@@ -70,13 +70,14 @@ export async function runScout(industryId: number, sources: SourceConfig[], labe
       for (const item of items) {
         const normalizedUrl = normalizeUrl(item.url);
         const { error } = await supabase!.from("articles").insert({
-          source_url: normalizedUrl,
-          title: item.title,
-          industry_id: industryId,
-          source_id: sourceId,
-          published_at: item.publishedAt?.toISOString() ?? null,
-          language: "de",
-          tags: [],
+          source_url:      normalizedUrl,
+          title:           item.title,
+          industry_id:     industryId,
+          source_id:       sourceId,
+          published_at:    item.publishedAt?.toISOString() ?? null,
+          language:        "de",
+          tags:            [],
+          rss_description: item.description ?? null,
         });
 
         if (!error) {

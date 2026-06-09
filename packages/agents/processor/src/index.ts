@@ -3,7 +3,7 @@ const require = createRequire(import.meta.url);
 try { require("dotenv").config({ override: true }); } catch { /* dotenv optional */ }
 
 import { createServiceClient } from "../../../shared/src/db/client.ts";
-import { fetchArticleText } from "./content.ts";
+import { fetchArticleContent } from "./content.ts";
 import { processArticleCombined } from "./claude.ts";
 
 const DRY_RUN          = process.env["DRY_RUN"] === "true";
@@ -33,7 +33,7 @@ async function run() {
   // Nur unverarbeitete Artikel holen (summary_medium noch nicht gesetzt)
   const { data: articles, error } = await supabase
     .from("articles")
-    .select("id, title, source_url, industry_id")
+    .select("id, title, source_url, industry_id, rss_description")
     .is("summary_medium", null)
     .order("ingested_at", { ascending: true })
     .limit(BATCH_SIZE);
@@ -58,9 +58,11 @@ async function run() {
       }
       const { name: industryName, tags_taxonomy } = industryCache.get(article.industry_id)!;
 
-      // 1. Volltext holen
-      const content = await fetchArticleText(article.source_url);
-      console.log(`[Processor]   content: ${content.length} chars`);
+      // 1. Inhalt holen — RSS-Description bevorzugt, Jina nur als Fallback
+      const rssDesc = (article as Record<string, unknown>)["rss_description"] as string | null ?? null;
+      const content = await fetchArticleContent(article.source_url, rssDesc);
+      const source  = rssDesc && content === rssDesc.slice(0, 5_000).trim() ? "rss" : "jina/html";
+      console.log(`[Processor]   content: ${content.length} chars (${source})`);
 
       if (DRY_RUN) {
         console.log(`[Processor]   [dry run — skipping API call]\n`);
