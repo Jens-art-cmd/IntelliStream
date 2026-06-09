@@ -37,6 +37,8 @@ type ArticleRow = {
   impact_reason: string | null; trust_score: number | null;
   published_at: string | null; ingested_at: string; processed_at: string | null;
   embedding: number[] | null; language: string; is_breaking: boolean;
+  is_suppressed: boolean;        // migration 016
+  rss_description: string | null; // migration 017
 };
 type ArticleInsert = {
   id?: string; source_url: string; title: string; full_text?: string | null;
@@ -46,6 +48,7 @@ type ArticleInsert = {
   impact_reason?: string | null; trust_score?: number | null;
   published_at?: string | null; ingested_at?: string; processed_at?: string | null;
   embedding?: number[] | null; language?: string; is_breaking?: boolean;
+  is_suppressed?: boolean; rss_description?: string | null;
 };
 
 type UserRow = {
@@ -54,6 +57,7 @@ type UserRow = {
   newsletter_time: string; stripe_customer_id: string | null;
   stripe_subscription_id: string | null; newsletter_opt_in: boolean;
   newsletter_opt_in_at: string | null; deletion_requested_at: string | null;
+  trial_started_at: string | null; trial_ends_at: string | null; // migration 018
   created_at: string; updated_at: string;
 };
 type UserInsert = {
@@ -62,6 +66,7 @@ type UserInsert = {
   newsletter_time?: string; stripe_customer_id?: string | null;
   stripe_subscription_id?: string | null; newsletter_opt_in?: boolean;
   newsletter_opt_in_at?: string | null; deletion_requested_at?: string | null;
+  trial_started_at?: string | null; trial_ends_at?: string | null;
   created_at?: string; updated_at?: string;
 };
 type UserUpdate = Partial<Omit<UserRow, "id" | "created_at">>;

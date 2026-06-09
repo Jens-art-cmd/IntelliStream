@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
+import { isBusinessEmail, BUSINESS_EMAIL_ERROR } from "../../../../../packages/shared/src/business-email";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -11,13 +12,23 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [name, setName]         = useState("");
   const [error, setError]       = useState<string | null>(null);
+  const [emailError, setEmailError] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [done, setDone]         = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setEmailError(false);
     setLoading(true);
+
+    // Business-E-Mail-Pflicht: Gratis-Anbieter werden nicht akzeptiert
+    if (!isBusinessEmail(email)) {
+      setError(BUSINESS_EMAIL_ERROR);
+      setEmailError(true);
+      setLoading(false);
+      return;
+    }
 
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({
@@ -73,13 +84,23 @@ export default function RegisterForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-neutral-700 mb-1.5">E-Mail-Adresse</label>
+          <label className="block text-xs font-semibold text-neutral-700 mb-1.5">
+            Geschäftliche E-Mail-Adresse
+          </label>
           <input
             type="email" required autoComplete="email"
-            value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="name@firma.de"
-            className="w-full border border-neutral-200 rounded-xl px-3.5 py-2.5 text-sm bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:border-amber-400 focus:ring-gold transition-all"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setEmailError(false); }}
+            placeholder="name@ihrefirma.de"
+            className={`w-full border rounded-xl px-3.5 py-2.5 text-sm bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none transition-all ${
+              emailError
+                ? "border-red-400 focus:border-red-400 bg-red-50"
+                : "border-neutral-200 focus:border-amber-400 focus:ring-gold"
+            }`}
           />
+          <p className="mt-1.5 text-xs text-neutral-400">
+            Nur geschäftliche Adressen — kein Gmail, GMX o.ä.
+          </p>
         </div>
         <div>
           <label className="block text-xs font-semibold text-neutral-700 mb-1.5">Passwort</label>
