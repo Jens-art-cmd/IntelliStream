@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { createServiceClient } from "../../../../../../packages/shared/src/db/client";
+import { createServiceClient } from "@intellistream/shared";
 import type Stripe from "stripe";
 
 /**

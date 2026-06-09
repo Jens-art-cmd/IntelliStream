@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import FeedClient from "@/components/feed/FeedClient";
-import { getTrialInfo } from "../../../../../packages/shared/src/trial";
+import { getTrialInfo } from "@intellistream/shared";
 
 export const metadata: Metadata = { title: "Mein Feed · IntelliStream" };
 

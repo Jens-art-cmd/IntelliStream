@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import SidebarNav from "@/components/dashboard/SidebarNav";
 import LogoutButton from "@/components/dashboard/LogoutButton";
 import TrialBanner from "@/components/dashboard/TrialBanner";
-import { getTrialInfo } from "../../../../packages/shared/src/trial";
+import { getTrialInfo } from "@intellistream/shared";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createSupabaseServerClient();
