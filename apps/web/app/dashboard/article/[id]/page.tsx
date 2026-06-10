@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { ImpactLevel } from "@/types/database";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { getTrialInfo } from "@/lib/trial";
 import BookmarkButton from "@/components/feed/BookmarkButton";
 
 // Next.js 15: params ist ein Promise
@@ -31,12 +32,26 @@ export default async function ArticleDetailPage({ params }: Props) {
   const impact = article.impact_level ? IMPACT_BADGE[article.impact_level as ImpactLevel] : null;
   const score  = article.relevance_score != null ? Math.round(article.relevance_score) : null;
 
-  // Bookmark-Status für diesen User laden
+  // User, Bookmark-Status und Plan parallel laden
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: bm } = user
-    ? await supabase.from("bookmarks").select("id").eq("user_id", user.id).eq("article_id", id).maybeSingle()
-    : { data: null };
+
+  const [
+    { data: bm },
+    { data: userData },
+  ] = await Promise.all([
+    user
+      ? supabase.from("bookmarks").select("id").eq("user_id", user.id).eq("article_id", id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    user
+      ? supabase.from("users").select("plan, trial_ends_at").eq("id", user.id).single()
+      : Promise.resolve({ data: null }),
+  ]);
+
   const isBookmarked = !!bm;
+  const { isFullAccess } = getTrialInfo({
+    plan: userData?.plan ?? "free",
+    trial_ends_at: userData?.trial_ends_at,
+  });
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-7">
@@ -121,14 +136,58 @@ export default async function ArticleDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* ── Long summary ─────────────────────────────────── */}
-      {article.summary_long && (
-        <div className="bg-white border border-neutral-100 rounded-xl px-6 py-5 mb-6 shadow-xs">
-          <h3 className="text-2xs font-bold tracking-[.1em] uppercase text-neutral-400 mb-3">
-            Zusammenfassung
-          </h3>
-          <p className="text-sm text-neutral-700 leading-[1.8]">{article.summary_long}</p>
-        </div>
+      {/* ── Summary (gated by plan) ───────────────────────── */}
+      {isFullAccess ? (
+        /* Pro / Trial: vollständige KI-Analyse */
+        article.summary_long && (
+          <div className="bg-white border border-neutral-100 rounded-xl px-6 py-5 mb-6 shadow-xs">
+            <h3 className="text-2xs font-bold tracking-[.1em] uppercase text-neutral-400 mb-3">
+              KI-Analyse
+            </h3>
+            <p className="text-sm text-neutral-700 leading-[1.8]">{article.summary_long}</p>
+          </div>
+        )
+      ) : (
+        /* Free: Kurz-Zusammenfassung + Upgrade-CTA */
+        <>
+          {article.summary_short && (
+            <div className="bg-white border border-neutral-100 rounded-xl px-6 py-5 mb-4 shadow-xs">
+              <h3 className="text-2xs font-bold tracking-[.1em] uppercase text-neutral-400 mb-3">
+                Zusammenfassung
+              </h3>
+              <p className="text-sm text-neutral-700 leading-[1.8]">{article.summary_short}</p>
+            </div>
+          )}
+          <div
+            className="rounded-xl mb-6 overflow-hidden"
+            style={{ border: "1.5px solid #ffb300", background: "linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%)" }}
+          >
+            <div className="px-5 py-4 flex gap-3 items-start">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{ background: "linear-gradient(135deg, #ffca28, #ff8f00)" }}
+              >
+                <span className="text-sm">🔒</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-neutral-800 mb-0.5">
+                  Vollständige KI-Analyse — Pro
+                </p>
+                <p className="text-xs text-neutral-600 leading-relaxed mb-3">
+                  Ausführliche Analyse, Hintergründe und Handlungsempfehlungen zu diesem Artikel
+                  sind im Pro-Plan verfügbar.
+                </p>
+                <Link
+                  href="/dashboard/settings"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-lg text-neutral-900 transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #ffca28 0%, #ffb300 100%)" }}
+                >
+                  Auf Pro upgraden →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </>
       )}
 
       {/* ── Tags ─────────────────────────────────────────── */}
