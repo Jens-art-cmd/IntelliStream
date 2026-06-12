@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: Abhängigkeiten installieren
-        run: npm ci
+        run: npm install
 
       # Kostenlimit: max 300 Artikel/Tag (PROCESSOR_DAILY_LIMIT), Batch 15
       # → max ~$1.95/Tag (~€58/Monat bei 15 Branchen). Deckt ~80% der tägl. Neuzugänge ab.

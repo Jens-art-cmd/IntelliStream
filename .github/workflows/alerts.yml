@@ -29,7 +29,7 @@ jobs:
           cache: 'npm'
 
       - name: Abhängigkeiten installieren
-        run: npm ci
+        run: npm install
 
       - name: Alert-Delivery ausführen
         run: npm run start -w @distillfeed/agents-alerts
