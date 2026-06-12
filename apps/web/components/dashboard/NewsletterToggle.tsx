@@ -39,7 +39,7 @@ export default function NewsletterToggle({ initialOptIn, frequency: initialFreq 
         if (res.ok) {
           showMsg("Bestätigungs-Mail gesendet — bitte prüfen Sie Ihr Postfach.");
         } else {
-          showMsg(data.error ?? "Fehler beim Anmelden.");
+          showMsg((data.detail ? `${data.error}: ${data.detail}` : data.error) ?? "Fehler beim Anmelden.");
         }
       }
     } finally {
