@@ -28,6 +28,9 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - name: npm auf v11 upgraden
+        run: npm install -g npm@11
+
       - name: Abhängigkeiten installieren
         run: npm install
 
