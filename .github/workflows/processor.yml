@@ -24,25 +24,23 @@ jobs:
       - name: Abhängigkeiten installieren
         run: npm ci
 
-      - name: Processor — alle unverarbeiteten Artikel
-        run: |
-          for i in $(seq 1 50); do
-            echo "=== Batch $i ==="
-            output=$(npm run start -w @intellistream/agents-processor 2>&1)
-            echo "$output"
-            if echo "$output" | grep -q "No unprocessed articles"; then
-              echo "Alle Artikel verarbeitet."
-              break
-            fi
-          done
+      # Kostenlimit: max 300 Artikel/Tag (PROCESSOR_DAILY_LIMIT), Batch 15
+      # → max ~$1.95/Tag (~€58/Monat bei 15 Branchen). Deckt ~80% der tägl. Neuzugänge ab.
+      # Der Processor prüft selbst ob das Tageslimit erreicht ist — läuft 1×/Stunde
+      # und bricht automatisch ab wenn kein Budget mehr übrig.
+      # Hinweis: Kein Guthaben bei Anthropic = keine Kosten, Limit ist dann irrelevant.
+      - name: Processor — unverarbeitete Artikel (mit Tageslimit)
+        run: npm run start -w @distillfeed/agents-processor
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           JINA_API_KEY: ${{ secrets.JINA_API_KEY }}
+          PROCESSOR_BATCH: "15"
+          PROCESSOR_DAILY_LIMIT: "300"
 
       - name: Embedder — Vektoren für neue Artikel generieren
-        run: npm run start:embed -w @intellistream/agents-processor
+        run: npm run start:embed -w @distillfeed/agents-processor
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

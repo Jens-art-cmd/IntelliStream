@@ -11,76 +11,55 @@ export default function TrialBanner({ daysLeft, status }: TrialBannerProps) {
   if (status === "active") return null;
 
   if (status === "trialing" && daysLeft !== null) {
-    if (daysLeft > 7) {
-      return (
-        <div
-          className="flex items-center justify-between rounded-2xl px-4 py-2.5 mb-4 text-xs"
-          style={{
-            background: "#e8eef5",
-            boxShadow: "inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff",
-            borderLeft: "3px solid #f59e0b",
-          }}
-        >
-          <span className="text-neutral-600">
-            Sie testen IntelliStream Pro &mdash; noch {daysLeft} Tage
-          </span>
-          <Link
-            href="/dashboard/settings"
-            className="text-amber-500 font-semibold hover:text-amber-600 transition-colors ml-4 whitespace-nowrap"
-          >
-            Jetzt upgraden &rarr;
-          </Link>
-        </div>
-      );
-    }
-
-    // daysLeft <= 7 — more prominent warning
     return (
       <div
-        className="flex items-center justify-between rounded-2xl px-4 py-2.5 mb-4 text-xs"
+        className="flex items-center justify-between px-4 py-2.5 mb-4 text-xs rounded-lg"
         style={{
-          background: "rgba(245,158,11,0.08)",
-          boxShadow: "inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff",
-          borderLeft: "3px solid #f59e0b",
+          background: "#FFF6E0",
+          border: "1px solid #FFD966",
+          borderLeft: "3px solid #FFB300",
         }}
       >
-        <span className="text-amber-700 font-bold">
-          Test endet in {daysLeft} Tag{daysLeft === 1 ? "" : "en"} &mdash; danach kostenloser Zugang (1 Branche)
+        <span
+          className="font-medium"
+          style={{ color: daysLeft <= 7 ? "#E08900" : "#57534A" }}
+        >
+          {daysLeft <= 7
+            ? `Test endet in ${daysLeft} Tag${daysLeft === 1 ? "" : "en"} — danach kostenloser Zugang`
+            : `Sie testen DistillFeed Pro — noch ${daysLeft} Tage`}
         </span>
         <Link
           href="/dashboard/settings"
-          className="text-amber-600 font-semibold hover:text-amber-700 transition-colors ml-4 whitespace-nowrap"
+          className="ml-4 whitespace-nowrap text-xs font-bold px-3 py-1.5 rounded-lg transition-all hover:-translate-y-px"
+          style={{ background: "#FFB300", color: "#1A1100" }}
         >
-          Jetzt upgraden &rarr;
+          Jetzt upgraden →
         </Link>
       </div>
     );
   }
 
-  // status === "free"
+  // free plan — editorial card
   return (
     <div
-      className="rounded-2xl p-4 mb-5"
-      style={{ boxShadow: "6px 6px 12px #c5cad3, -6px -6px 12px #ffffff" }}
+      className="flex items-center justify-between gap-4 px-4 py-3 mb-5 rounded-xl"
+      style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
     >
-      <div className="flex items-start gap-3">
-        <span className="text-lg leading-none mt-0.5">&#128275;</span>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-neutral-800 mb-0.5">
-            Testen Sie IntelliStream Pro
-          </p>
-          <p className="text-xs text-neutral-500 leading-relaxed">
-            Vollständige KI-Zusammenfassungen, bis zu 5 Branchen, täglicher Newsletter
-          </p>
-        </div>
-        <Link
-          href="/dashboard/settings"
-          className="flex-shrink-0 inline-flex items-center px-4 py-2 rounded-xl text-xs font-bold text-neutral-900 transition-all hover:shadow-md hover:-translate-y-px"
-          style={{ background: "linear-gradient(135deg, #ffca28 0%, #ffb300 100%)" }}
-        >
-          Kostenlos testen
-        </Link>
+      <div className="min-w-0">
+        <p className="text-[13px] font-semibold mb-0.5" style={{ color: "#1A1813" }}>
+          DistillFeed Pro testen
+        </p>
+        <p className="text-[12px] leading-relaxed" style={{ color: "#57534A" }}>
+          Vollständige KI-Zusammenfassungen, alle 15 Branchen, täglicher Newsletter
+        </p>
       </div>
+      <Link
+        href="/dashboard/settings"
+        className="flex-shrink-0 text-[12px] font-bold px-4 py-2 rounded-lg transition-all hover:-translate-y-px whitespace-nowrap"
+        style={{ background: "#FFB300", color: "#1A1100", boxShadow: "0 2px 8px rgba(224,137,0,0.22)" }}
+      >
+        Kostenlos testen
+      </Link>
     </div>
   );
 }

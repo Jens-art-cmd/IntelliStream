@@ -25,31 +25,91 @@ jobs:
         run: npm ci
 
       - name: Scout — Energie & Erneuerbare
-        run: npm run start -w @intellistream/agents-scout
+        run: npm run start -w @distillfeed/agents-scout
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Scout — Finanzen & Kapitalmarkt
-        run: npm run start:finance -w @intellistream/agents-scout
+        run: npm run start:finance -w @distillfeed/agents-scout
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Scout — Recht & Compliance
-        run: npm run start:recht -w @intellistream/agents-scout
+        run: npm run start:recht -w @distillfeed/agents-scout
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Scout — IT & Cybersecurity
-        run: npm run start:it -w @intellistream/agents-scout
+        run: npm run start:it -w @distillfeed/agents-scout
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
       - name: Scout — Automotive & Mobilität
-        run: npm run start:automotive -w @intellistream/agents-scout
+        run: npm run start:automotive -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — ESG & Nachhaltigkeit
+        run: npm run start:esg -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Pharma & Life Science
+        run: npm run start:pharma -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Bau & Immobilien
+        run: npm run start:bau -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Gesundheit & MedTech
+        run: npm run start:gesundheit -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Maschinenbau & Industrie 4.0
+        run: npm run start:maschinenbau -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — EU-Regulatorik & Gesetzgebung
+        run: npm run start:eu -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — HR & Arbeitsmarkt
+        run: npm run start:hr -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Logistik & Transport
+        run: npm run start:logistik -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Versicherung & Risiko
+        run: npm run start:versicherung -w @distillfeed/agents-scout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - name: Scout — Chemie & Materialien
+        run: npm run start:chemie -w @distillfeed/agents-scout
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

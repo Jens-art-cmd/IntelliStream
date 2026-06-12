@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Search } from "lucide-react";
 import ArticleCard from "./ArticleCard";
 import type { ImpactLevel } from "@/types/database";
 
@@ -32,14 +34,41 @@ interface Props {
 
 const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; dot?: string }[] = [
   { value: "all",    label: "Alle" },
-  { value: "high",   label: "Hoch",    dot: "#ef4444" },
-  { value: "medium", label: "Mittel",  dot: "#f59e0b" },
-  { value: "low",    label: "Gering",  dot: "#22c55e" },
+  { value: "high",   label: "Hoch",    dot: "#DC2626" },
+  { value: "medium", label: "Mittel",  dot: "#E08900" },
+  { value: "low",    label: "Gering",  dot: "#2D7553" },
 ];
 
-export default function FeedClient({ articles, industries, bookmarkedIds = new Set() }: Props) {
-  const [impact, setImpact]     = useState<ImpactLevel | "all">("all");
-  const [industry, setIndustry] = useState<number | "all">("all");
+// Inner component — uses useSearchParams, must be inside <Suspense>
+function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Props) {
+  const router    = useRouter();
+  const pathname  = usePathname();
+  const searchParams = useSearchParams();
+
+  const [impact, setImpact] = useState<ImpactLevel | "all">(() => {
+    const p = searchParams.get("impact");
+    return (p === "high" || p === "medium" || p === "low") ? p : "all";
+  });
+  const [industry, setIndustry] = useState<number | "all">(() => {
+    const raw = searchParams.get("industry");
+    const n   = raw ? parseInt(raw, 10) : NaN;
+    return isNaN(n) ? "all" : n;
+  });
+
+  const pushParams = useCallback(
+    (newImpact: ImpactLevel | "all", newIndustry: number | "all") => {
+      const params = new URLSearchParams();
+      if (newImpact   !== "all") params.set("impact",   newImpact);
+      if (newIndustry !== "all") params.set("industry", String(newIndustry));
+      const qs = params.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [router, pathname],
+  );
+
+  const handleImpact   = (val: ImpactLevel | "all") => { setImpact(val);   pushParams(val, industry); };
+  const handleIndustry = (val: number | "all")       => { setIndustry(val); pushParams(impact, val); };
+  const resetFilters   = () => { setImpact("all"); setIndustry("all"); router.replace(pathname, { scroll: false }); };
 
   const activeIndustries = useMemo(
     () => industries.filter((ind) => articles.some((a) => a.industry_id === ind.id)),
@@ -49,56 +78,41 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
   const filtered = useMemo(() => {
     return articles.filter((a) => {
       const impactMatch   = impact   === "all" || a.impact_level === impact;
-      const industryMatch = industry === "all" || a.industry_id === industry;
+      const industryMatch = industry === "all" || a.industry_id  === industry;
       return impactMatch && industryMatch;
     });
   }, [articles, impact, industry]);
 
-  const filterBtnStyle = (active: boolean) => active
-    ? {
-        boxShadow: "inset 3px 3px 6px #c0c5ce, inset -1px -1px 4px #ffffff",
-        background: "#e8eef5",
-        color: "#1f2937",
-        fontWeight: 600,
-        border: "1.5px solid rgba(217, 119, 6, 0.45)",
-      }
-    : {
-        boxShadow: "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
-        background: "#e8eef5",
-        color: "#4b5563",
-        border: "1.5px solid transparent",
-      };
+  const filterBtn = (active: boolean): React.CSSProperties => active
+    ? { background: "#FFB300", color: "#1A1100", fontWeight: 600, border: "1px solid #FFB300" }
+    : { background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2" };
 
   return (
     <div className="space-y-4">
 
       {/* ── Filter bar ──────────────────────────────────────── */}
       <div
-        className="px-5 py-4 space-y-3"
-        style={{
-          background: "#e8eef5",
-          boxShadow: "8px 8px 16px #c5cad3, -8px -8px 16px #ffffff",
-          borderRadius: "18px",
-        }}
+        className="px-5 py-4 space-y-3 rounded-xl"
+        style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
       >
         {/* Impact filter */}
         <div className="flex items-center gap-3">
-          <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-500 w-16 flex-shrink-0">
+          <span
+            className="text-[9px] font-bold uppercase flex-shrink-0 w-16"
+            style={{ letterSpacing: "0.12em", color: "#8C887E" }}
+          >
             Impact
           </span>
           <div className="flex items-center gap-2 flex-wrap">
             {IMPACT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => setImpact(opt.value)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all duration-150"
-                style={filterBtnStyle(impact === opt.value)}
+                onClick={() => handleImpact(opt.value)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer"
+                style={filterBtn(impact === opt.value)}
               >
                 {opt.dot && (
-                  <span
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: opt.dot }}
-                  />
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: opt.dot }} />
                 )}
                 {opt.label}
               </button>
@@ -109,55 +123,84 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
         {/* Industry filter */}
         {activeIndustries.length > 1 && (
           <div className="flex items-center gap-3">
-            <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-500 w-16 flex-shrink-0">
+            <span
+              className="text-[9px] font-bold uppercase flex-shrink-0 w-16"
+              style={{ letterSpacing: "0.12em", color: "#8C887E" }}
+            >
               Branche
             </span>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                onClick={() => setIndustry("all")}
-                className="px-3 py-1.5 rounded-full text-xs transition-all duration-150"
-                style={filterBtnStyle(industry === "all")}
-              >
-                Alle
-              </button>
-              {activeIndustries.map((ind) => (
+
+            {/* Bis 5 abonnierte Branchen → Pill-Buttons; ab 6 → Dropdown */}
+            {industries.length <= 5 ? (
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
-                  key={ind.id}
-                  onClick={() => setIndustry(ind.id)}
-                  className="px-3 py-1.5 rounded-full text-xs transition-all duration-150"
-                  style={filterBtnStyle(industry === ind.id)}
+                  onClick={() => handleIndustry("all")}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer"
+                  style={filterBtn(industry === "all")}
                 >
-                  {ind.name}
+                  Alle
                 </button>
-              ))}
-            </div>
+                {activeIndustries.map((ind) => (
+                  <button
+                    key={ind.id}
+                    onClick={() => handleIndustry(ind.id)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer"
+                    style={filterBtn(industry === ind.id)}
+                  >
+                    {ind.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <select
+                value={industry === "all" ? "all" : String(industry)}
+                onChange={(e) => handleIndustry(e.target.value === "all" ? "all" : parseInt(e.target.value, 10))}
+                className="text-xs font-medium rounded-full px-3 py-1.5 cursor-pointer transition-all duration-150 outline-none"
+                style={
+                  industry !== "all"
+                    ? { background: "#FFB300", color: "#1A1100", fontWeight: 600, border: "1px solid #FFB300" }
+                    : { background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2" }
+                }
+              >
+                <option value="all">Alle Branchen</option>
+                {activeIndustries.map((ind) => (
+                  <option key={ind.id} value={String(ind.id)}>
+                    {ind.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         )}
       </div>
 
       {/* ── Result count ────────────────────────────────────── */}
-      <p className="text-xs text-neutral-600 font-medium px-1">
+      <p className="text-xs font-medium px-1" style={{ color: "#57534A" }}>
         {filtered.length} Artikel
         {(impact !== "all" || industry !== "all") && (
-          <span className="ml-1.5 text-neutral-300">· gefiltert</span>
+          <span className="ml-1.5" style={{ color: "#C8C2B6" }}>· gefiltert</span>
         )}
       </p>
 
       {/* ── Articles ────────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <div
-          className="text-center py-14 px-6"
-          style={{
-            background: "#e8eef5",
-            boxShadow: "8px 8px 16px #c5cad3, -8px -8px 16px #ffffff",
-            borderRadius: "18px",
-          }}
+          className="text-center py-14 px-6 rounded-xl"
+          style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
         >
-          <div className="text-3xl mb-3">🔍</div>
-          <p className="text-sm font-medium text-neutral-600 mb-1">Keine Artikel für diese Filterauswahl</p>
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3"
+            style={{ background: "#FAF8F4", border: "1px solid #E2DDD2" }}
+          >
+            <Search size={18} strokeWidth={1.75} color="#8C887E" />
+          </div>
+          <p className="text-sm font-medium mb-1" style={{ color: "#57534A" }}>
+            Keine Artikel für diese Filterauswahl
+          </p>
           <button
-            onClick={() => { setImpact("all"); setIndustry("all"); }}
-            className="text-sm text-amber-600 font-medium hover:underline mt-2"
+            onClick={resetFilters}
+            className="text-sm font-semibold hover:underline mt-2 cursor-pointer"
+            style={{ color: "#E08900" }}
           >
             Filter zurücksetzen
           </button>
@@ -172,13 +215,21 @@ export default function FeedClient({ articles, industries, bookmarkedIds = new S
 
       {/* ── Load-more hint ──────────────────────────────────── */}
       {articles.length >= 30 && (
-        <p className="text-center text-xs text-neutral-400 pt-3 pb-2">
+        <p className="text-center text-xs pt-3 pb-2" style={{ color: "#8C887E" }}>
           Zeige die 30 neuesten Artikel je Branche.{" "}
-          <Link href="/dashboard/search" className="text-amber-600 font-semibold hover:underline">
+          <Link href="/dashboard/search" className="font-semibold hover:underline" style={{ color: "#E08900" }}>
             Zur Suche →
           </Link>
         </p>
       )}
     </div>
+  );
+}
+
+export default function FeedClient(props: Props) {
+  return (
+    <Suspense fallback={<div className="h-10" />}>
+      <FeedClientInner {...props} />
+    </Suspense>
   );
 }

@@ -187,6 +187,11 @@ export const INDUSTRY_IMPACT_CRITERIA: Record<string, { high: string; medium: st
     medium: "USK-Leitentscheidung neue Kategorie, EU-DSA-Vollzug gegen Gaming-Plattform, GEZ/ARD-Beitrag Änderung Streaming, neue IFPI-Lizenzierungsregeln, KJM-Beschluss",
     low: "Spielrelease-Berichte, eSports-Turniere, internationale Marktdaten, Unternehmensporträts, Branchenkonferenzen",
   },
+  "EU-Regulatorik & Gesetzgebung": {
+    high: "Neue EU-Verordnung im Amtsblatt (L-Serie) in Kraft getreten, Trilog-Einigung zu AI Act/Data Act/DMA/DSA oder ähnlichem mit unmittelbarer Unternehmenswirkung, EuGH-Grundsatzurteil mit Querschnittswirkung, EU-Kommission Vertragsverletzungsverfahren gegen DE mit Frist, Notfallverordnung EU-Rat",
+    medium: "EU-Kommission Legislativvorschlag veröffentlicht, EP-Ausschuss nimmt Position an, EU-Rat allgemeine Ausrichtung beschlossen, Konsultationsfrist läuft ab (<4 Wochen), Delegierter Rechtsakt zur Konsultation freigegeben, EuGH-Schlussanträge zu wichtigem Verfahren",
+    low: "Fortschrittsberichte laufender Gesetzgebungsverfahren, allgemeine EU-Politikberichte ohne unmittelbaren Gesetzgebungsbezug, Personaländerungen in EU-Institutionen, internationale Abkommen ohne DE-Sofortwirkung",
+  },
 };
 
 function getImpactCriteria(industry: string): string {
