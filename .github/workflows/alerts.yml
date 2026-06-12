@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: '0 8 * * *'   # Täglich um 08:00 UTC
   workflow_dispatch:        # Manuell auslösbar im GitHub UI
+    inputs:
+      dry_run:
+        description: 'Dry-Run (keine E-Mails senden, nur Logs)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
 
 jobs:
   alerts:
@@ -25,10 +32,11 @@ jobs:
         run: npm ci
 
       - name: Alert-Delivery ausführen
-        run: npm run start -w @intellistream/agents-alerts
+        run: npm run start -w @distillfeed/agents-alerts
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM: ${{ secrets.RESEND_FROM }}
           APP_URL: ${{ secrets.APP_URL }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
