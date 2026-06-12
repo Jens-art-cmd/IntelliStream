@@ -4,6 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import IndustrySelector from "@/components/dashboard/IndustrySelector";
 import UpgradeButton from "@/components/dashboard/UpgradeButton";
 import UpgradeNotification from "@/components/dashboard/UpgradeNotification";
+import NewsletterToggle from "@/components/dashboard/NewsletterToggle";
 import { getTrialInfo } from "@/lib/trial";
 
 export const metadata: Metadata = { title: "Einstellungen · DistillFeed" };
@@ -34,13 +35,15 @@ export default async function SettingsPage({
   ]);
 
   const { data: userData } = user
-    ? await supabase.from("users").select("industry_subscriptions, plan, trial_ends_at").eq("id", user.id).single()
+    ? await supabase.from("users").select("industry_subscriptions, plan, trial_ends_at, newsletter_opt_in, newsletter_frequency").eq("id", user.id).single()
     : { data: null };
 
   const currentSubscriptions: number[] = userData?.industry_subscriptions ?? [];
   const plan = userData?.plan ?? "free";
   const trialInfo = getTrialInfo({ plan, trial_ends_at: userData?.trial_ends_at });
   const isPaid = plan !== "free";
+  const newsletterOptIn: boolean = userData?.newsletter_opt_in ?? false;
+  const newsletterFrequency: "daily" | "weekly" | "realtime" = userData?.newsletter_frequency ?? "weekly";
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-7">
@@ -249,6 +252,31 @@ export default async function SettingsPage({
           </div>
         </div>
       )}
+
+      {/* ── Newsletter card ──────────────────────────────── */}
+      <div
+        className="rounded-xl overflow-hidden mb-4"
+        style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
+      >
+        <div className="px-5 py-4" style={{ borderBottom: "1px solid #EBE7DD" }}>
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <span className="block w-4 h-px" style={{ background: "#E08900" }} />
+            <span className="text-[9px] font-bold uppercase" style={{ letterSpacing: "0.16em", color: "#8C887E" }}>
+              Newsletter
+            </span>
+          </div>
+          <h2 className="text-sm font-semibold" style={{ color: "#1A1813" }}>Newsletter-Einstellungen</h2>
+          <p className="text-xs mt-0.5" style={{ color: "#57534A" }}>
+            Täglich oder wöchentlich — die wichtigsten Nachrichten aus Ihren Branchen.
+          </p>
+        </div>
+        <div className="px-5 py-4">
+          <NewsletterToggle
+            initialOptIn={newsletterOptIn}
+            frequency={newsletterFrequency === "realtime" ? "daily" : newsletterFrequency}
+          />
+        </div>
+      </div>
 
       {/* ── Industry selector card ───────────────────────── */}
       <div
