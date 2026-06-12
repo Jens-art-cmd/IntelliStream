@@ -1,7 +1,7 @@
 /**
  * Business-E-Mail-Validierung
  *
- * IntelliStream ist eine B2B-Plattform — kostenlose Privatanbieter
+ * DistillFeed ist eine B2B-Plattform — kostenlose Privatanbieter
  * werden blockiert, um Free-Plan-Missbrauch (Mehrfach-Accounts) zu
  * erschweren und die Zielgruppe sauber zu halten.
  */

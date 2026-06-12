@@ -132,7 +132,7 @@ async function scanSitemapForFeeds(origin: string, log: (m: string) => void): Pr
 export async function validateFeed(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": "IntelliStream-Scout/1.0 (+https://intellistream.de)" },
+      headers: { "User-Agent": "DistillFeed-Scout/1.0 (+https://distillfeed.eu)" },
       signal: AbortSignal.timeout(TIMEOUT),
     });
     if (!res.ok) return false;
@@ -149,7 +149,7 @@ export async function validateFeed(url: string): Promise<boolean> {
 async function fetchText(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": "IntelliStream-Scout/1.0 (+https://intellistream.de)" },
+      headers: { "User-Agent": "DistillFeed-Scout/1.0 (+https://distillfeed.eu)" },
       signal: AbortSignal.timeout(TIMEOUT),
     });
     if (!res.ok) return null;

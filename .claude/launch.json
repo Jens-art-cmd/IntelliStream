@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "design-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "preview", "-p", "4321", "--no-clipboard"],
+      "port": 4321
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "apps/web"],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

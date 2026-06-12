@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { CreateAlertSchema } from "@intellistream/shared";
+import { CreateAlertSchema } from "@distillfeed/shared";
 
 const alertsRoutes: FastifyPluginAsync = async (app) => {
   // GET /alerts

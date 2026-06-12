@@ -1,83 +1,81 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* Fonts via next/font — no @import needed here */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── Neumorphic base colour ──────────────────────────────── */
 :root {
   --sidebar-width: 240px;
-  --neu-base:  #e8eef5;
-  --neu-dark:  #c5cad3;
-  --neu-light: #ffffff;
+
+  /* Editorial design tokens */
+  --paper:      #F7F5F0;
+  --paper-deep: #F1EDE4;
+  --ink:        #1A1813;
+  --ink-soft:   #57534A;
+  --ink-faint:  #8C887E;
+  --amber:      #FFB300;
+  --amber-deep: #E08900;
+  --line:       #E2DDD2;
+  --line-soft:  #EBE7DD;
+  --surface:    #FFFFFF;
 }
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-body), 'Hanken Grotesk', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
 
   body {
-    background-color: #e8eef5;
-    color: #374151;
+    background: var(--paper, #F7F5F0);
+    color: var(--ink, #1A1813);
   }
 
-  /* Soft scrollbar matching the base colour */
   ::-webkit-scrollbar        { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track  { background: transparent; }
-  ::-webkit-scrollbar-thumb  { background: #c5cad3; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: #adb4bf; }
+  ::-webkit-scrollbar-thumb  { background: #C8C2B6; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #8C887E; }
 }
 
 @layer components {
-  /* ── Neumorphic surface — outset (raised card) */
-  .neu-card {
-    background: #e8eef5;
-    box-shadow: 8px 8px 16px #c5cad3, -8px -8px 16px #ffffff;
-    border-radius: 18px;
-    border: none;
+  /* Editorial card */
+  .fl-card {
+    background: #FFFFFF;
+    border: 1px solid #E2DDD2;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(26,24,19,0.06);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
   }
-  .neu-card-sm {
-    background: #e8eef5;
-    box-shadow: 4px 4px 8px #c5cad3, -4px -4px 8px #ffffff;
-    border-radius: 14px;
-    border: none;
-  }
-
-  /* ── Neumorphic surface — inset (pressed / input) */
-  .neu-inset {
-    background: #e8eef5;
-    box-shadow: inset 4px 4px 8px #c5cad3, inset -4px -4px 8px #ffffff;
-    border-radius: 14px;
-    border: none;
-  }
-  .neu-inset-sm {
-    background: #e8eef5;
-    box-shadow: inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff;
-    border-radius: 10px;
-    border: none;
+  .fl-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26,24,19,0.10);
+    border-color: #C8C2B6;
   }
 
-  /* ── Neumorphic pill button */
-  .neu-btn {
-    background: #e8eef5;
-    box-shadow: 4px 4px 8px #c5cad3, -4px -4px 8px #ffffff;
-    border-radius: 50px;
-    border: none;
-    transition: box-shadow .15s ease, transform .15s ease;
+  /* Amber highlight box */
+  .fl-amber-box {
+    background: #FFF6E0;
+    border: 1px solid #FFD966;
+    border-left: 3px solid #FFB300;
+    border-radius: 8px;
   }
-  .neu-btn:hover {
-    box-shadow: 5px 5px 10px #c5cad3, -5px -5px 10px #ffffff;
-    transform: translateY(-1px);
+
+  /* Editorial input */
+  .fl-input {
+    background: #FAF8F4;
+    border: 1.5px solid #E2DDD2;
+    border-radius: 8px;
+    color: #1A1813;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
   }
-  .neu-btn:active,
-  .neu-btn-active {
-    box-shadow: inset 3px 3px 7px #c0c5ce, inset -1px -1px 4px #ffffff;
-    transform: translateY(0);
+  .fl-input:focus {
+    outline: none;
+    border-color: #E08900;
+    box-shadow: 0 0 0 3px rgba(224,137,0,0.14);
   }
+  .fl-input::placeholder { color: #8C887E; }
 }
 
 @layer utilities {
@@ -88,11 +86,25 @@
   .tracking-tighter-md { letter-spacing: -0.02em; }
   .tracking-tight-sm   { letter-spacing: -0.015em; }
 
-  /* Impact accent bars — coloured left glow */
-  .card-accent-high   { border-left: 3px solid #ef4444; }
-  .card-accent-medium { border-left: 3px solid #f59e0b; }
-  .card-accent-low    { border-left: 3px solid #22c55e; }
+  /* Impact accent bars — editorial warm tones */
+  .card-accent-high   { border-left: 3px solid #E08900; }
+  .card-accent-medium { border-left: 3px solid #C8A85A; }
+  .card-accent-low    { border-left: 3px solid #8C887E; }
 
-  /* Gold glow ring */
-  .ring-gold { box-shadow: 0 0 0 3px rgba(255,179,0,.25); }
+  /* text-2xs */
+  .text-2xs { font-size: 0.65rem; line-height: 1rem; }
+
+  /* Skip to main content — a11y */
+  .skip-to-content {
+    position: absolute;
+    top: -9999px;
+    left: 0;
+    z-index: 9999;
+    padding: 8px 16px;
+    background: #FFB300;
+    color: #1A1100;
+    font-weight: 600;
+    border-radius: 0 0 8px 0;
+  }
+  .skip-to-content:focus { top: 0; }
 }

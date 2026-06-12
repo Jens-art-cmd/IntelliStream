@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliStream — Flat Light (Design-Agent Empfehlung)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #f5f6f8 0%, #eef0f4 100%);
+      color: #111827;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .app { display: flex; height: 100vh; }
+
+    /* ── Linke Sidebar ────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background-color: #ffffff;
+      border-right: 1px solid #e4e7ec;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 14px;
+      gap: 4px;
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar { width: 0; }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 10px 18px;
+      border-bottom: 1px solid #f3f4f6;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .logo-mark {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #ffca28 0%, #ff8f00 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; color: #1a1100;
+      box-shadow: 0 2px 8px rgba(255, 160, 0, 0.25);
+    }
+    .logo-text strong { font-size: 13px; font-weight: 700; color: #111827; display: block; }
+    .logo-text span { font-size: 10px; color: #9ca3af; }
+
+    /* Nav Items */
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: 6px;
+      font-size: 13px; font-weight: 500; color: #4b5563;
+      cursor: pointer; transition: background 150ms ease, color 150ms ease;
+      text-decoration: none; position: relative; flex-shrink: 0;
+    }
+    .nav-item:hover { background: #f3f4f6; color: #111827; }
+    .nav-item.active {
+      background: #fff8e1;
+      color: #b45309;
+      font-weight: 600;
+      border-left: 3px solid #ffb300;
+      padding-left: 9px;
+      border-radius: 0 6px 6px 0;
+    }
+    .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+    /* ── Branchen Mini-Section in Sidebar ─────────────── */
+    .sidebar-divider {
+      height: 1px; background: #f3f4f6;
+      margin: 10px 0 8px; flex-shrink: 0;
+    }
+    .sidebar-section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: #9ca3af;
+      padding: 0 12px; margin-bottom: 4px; flex-shrink: 0;
+    }
+    .branch-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border-radius: 6px;
+      cursor: pointer; transition: background 120ms; flex-shrink: 0;
+    }
+    .branch-item:hover { background: #f9fafb; }
+    .branch-item.active { background: #fff8e1; }
+    .branch-icon { font-size: 13px; width: 18px; text-align: center; }
+    .branch-name { font-size: 12px; font-weight: 500; color: #374151; flex: 1; }
+    .branch-count {
+      font-size: 10px; font-weight: 700; color: #9ca3af;
+      background: #f3f4f6; padding: 1px 6px; border-radius: 10px;
+    }
+    .branch-item.active .branch-count { background: #fde68a; color: #b45309; }
+
+    /* Stats mini widget */
+    .sidebar-stats {
+      margin: 8px 0 0;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 3px solid #ffb300;
+      border-radius: 8px; padding: 10px 12px;
+      flex-shrink: 0;
+    }
+    .sidebar-stats-title { font-size: 10px; font-weight: 700; color: #b45309; margin-bottom: 7px; }
+    .stat-mini-row {
+      display: flex; justify-content: space-between;
+      font-size: 11px; margin-bottom: 3px;
+    }
+    .stat-mini-row:last-child { margin-bottom: 0; }
+    .stat-mini-label { color: #6b7280; }
+    .stat-mini-value { font-weight: 700; color: #111827; }
+
+    .sidebar-spacer { flex: 1; min-height: 12px; }
+
+    .user-pill {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 12px; border-radius: 8px;
+      background: #f9fafb; border: 1px solid #e4e7ec;
+      flex-shrink: 0;
+    }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #ffca28, #e08900);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: #1a1100; flex-shrink: 0;
+    }
+    .user-email { font-size: 10px; color: #6b7280; }
+    .plan-badge {
+      font-size: 9px; font-weight: 800; letter-spacing: .06em;
+      padding: 2px 7px; border-radius: 20px;
+      background: #ffb300; color: #1a1100;
+    }
+
+    /* ── Main / Feed ──────────────────────────────────── */
+    .main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* Top bar */
+    .topbar {
+      background: #ffffff; border-bottom: 1px solid #e4e7ec;
+      padding: 12px 32px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .filter-label { font-size: 11px; color: #9ca3af; font-weight: 500; }
+    .chip {
+      font-size: 12px; font-weight: 500; padding: 4px 14px; border-radius: 20px;
+      cursor: pointer; transition: all 150ms ease;
+      background: #f3f4f6; color: #6b7280; border: 1px solid #e4e7ec;
+    }
+    .chip:hover { background: #e9ebee; color: #374151; }
+    .chip.active {
+      background: #ffb300; color: #1a1100;
+      border-color: #ffb300; font-weight: 600;
+    }
+    .topbar-spacer { flex: 1; }
+    .topbar-search {
+      display: flex; align-items: center; gap: 7px;
+      background: #f9fafb; border: 1px solid #e4e7ec;
+      border-radius: 8px; padding: 5px 12px;
+      font-size: 12px; color: #9ca3af; cursor: pointer;
+      transition: border-color 150ms;
+    }
+    .topbar-search:hover { border-color: #d1d5db; }
+
+    /* Feed scroll area */
+    .feed {
+      flex: 1; overflow-y: auto;
+      padding: 24px 32px 32px;
+    }
+    .feed::-webkit-scrollbar { width: 5px; }
+    .feed::-webkit-scrollbar-thumb { background: #e4e7ec; border-radius: 4px; }
+
+    /* Trial Banner */
+    .trial-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-left: 3px solid #ffb300;
+      border-radius: 8px; padding: 10px 16px; margin-bottom: 20px;
+      font-size: 12px; color: #92400e;
+    }
+    .trial-btn {
+      font-size: 11px; font-weight: 700;
+      background: #ffb300; color: #1a1100;
+      border: none; padding: 5px 14px; border-radius: 5px;
+      cursor: pointer; white-space: nowrap;
+    }
+
+    /* ── Article cards ────────────────────────────────── */
+    .article-card {
+      background: #ffffff;
+      border: 1px solid #e4e7ec;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      margin-bottom: 10px; overflow: hidden; cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+    .article-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.09);
+      border-color: #d1d5db;
+    }
+    .article-card.featured { border-color: #fde68a; }
+    .article-card.featured:hover { border-color: #ffb300; }
+
+    /* Featured: full-width image banner */
+    .featured-img-placeholder {
+      width: 100%; height: 200px;
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 40%, #1a6b5a 80%, #0f4c3a 100%);
+      position: relative; overflow: hidden;
+    }
+    .featured-img-placeholder::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(10,20,30,0.78) 0%, transparent 55%);
+    }
+    .featured-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 1;
+      padding: 18px 22px 16px;
+    }
+    .breaking-badge {
+      font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      background: #dc2626; color: white;
+      padding: 3px 8px; border-radius: 4px;
+      display: inline-block; margin-bottom: 7px;
+    }
+    .featured-title {
+      font-size: 18px; font-weight: 800; line-height: 1.25;
+      color: #ffffff; letter-spacing: -0.2px;
+    }
+
+    /* Horizontal card layout for regular articles */
+    .card-row {
+      display: flex; align-items: stretch;
+    }
+    .card-row-content { flex: 1; padding: 16px 18px; min-width: 0; }
+
+    .card-meta {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .source-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .05em;
+      text-transform: uppercase; color: #9ca3af;
+    }
+    .dot { color: #d1d5db; font-size: 10px; }
+    .time-label { font-size: 10px; color: #9ca3af; }
+
+    .impact-badge {
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+      display: inline-flex; align-items: center; gap: 4px;
+      letter-spacing: 0.02em; text-transform: uppercase;
+    }
+    .impact-badge.high   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .impact-badge.medium { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .impact-badge.low    { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .impact-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .high .impact-dot   { background: #dc2626; }
+    .medium .impact-dot { background: #d97706; }
+    .low .impact-dot    { background: #16a34a; }
+
+    .card-title {
+      color: #111827; font-weight: 600;
+      font-size: 14.5px; line-height: 1.4; margin-bottom: 6px;
+    }
+    .card-summary { color: #6b7280; font-size: 12.5px; line-height: 1.6; }
+
+    .card-footer {
+      padding: 9px 18px;
+      border-top: 1px solid #f3f4f6;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px; color: #9ca3af;
+      background: #f9fafb; border: 1px solid #e4e7ec;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .card-actions { display: flex; align-items: center; gap: 12px; }
+    .relevance { display: flex; align-items: center; gap: 5px; }
+    .rel-bar { width: 52px; height: 3px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+    .rel-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #ffb300, #f59e0b); }
+    .rel-label { font-size: 9px; font-family: monospace; color: #9ca3af; }
+    .action-btn {
+      background: none; border: none; cursor: pointer;
+      color: #d1d5db; font-size: 14px; transition: color 150ms;
+    }
+    .action-btn:hover { color: #ffb300; }
+
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Linke Sidebar ──────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">IS</div>
+      <div class="logo-text">
+        <strong>IntelliStream</strong>
+        <span>Fachinformation · KI</span>
+      </div>
+    </div>
+
+    <a class="nav-item active">
+      <span class="nav-icon">📰</span> Feed
+    </a>
+    <a class="nav-item">
+      <span class="nav-icon">🔍</span> Suche
+    </a>
+    <a class="nav-item">
+      <span class="nav-icon">🔔</span> Alerts
+    </a>
+    <a class="nav-item">
+      <span class="nav-icon">🔖</span> Bookmarks
+    </a>
+    <a class="nav-item">
+      <span class="nav-icon">⚙️</span> Einstellungen
+    </a>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Meine Branchen</div>
+
+    <div class="branch-item active">
+      <span class="branch-icon">⚡</span>
+      <span class="branch-name">Energie & Erneuerbare</span>
+      <span class="branch-count">24</span>
+    </div>
+    <div class="branch-item">
+      <span class="branch-icon">⚖️</span>
+      <span class="branch-name">Recht & Compliance</span>
+      <span class="branch-count">11</span>
+    </div>
+    <div class="branch-item">
+      <span class="branch-icon">💹</span>
+      <span class="branch-name">Finanzen & Kapital</span>
+      <span class="branch-count">8</span>
+    </div>
+    <div class="branch-item">
+      <span class="branch-icon">🔒</span>
+      <span class="branch-name">IT & Cybersecurity</span>
+      <span class="branch-count">17</span>
+    </div>
+
+    <div class="sidebar-stats">
+      <div class="sidebar-stats-title">⚡ Ihr Feed heute</div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-label">Neue Artikel</span>
+        <span class="stat-mini-value">47</span>
+      </div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-label">Hoher Impact</span>
+        <span class="stat-mini-value">12</span>
+      </div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-label">Alert-Treffer</span>
+        <span class="stat-mini-value">3</span>
+      </div>
+      <div class="stat-mini-row">
+        <span class="stat-mini-label">Ø Relevanz</span>
+        <span class="stat-mini-value">81/100</span>
+      </div>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="user-pill">
+      <div class="avatar">JM</div>
+      <div style="flex:1;min-width:0;">
+        <div class="user-email">jens@firma.de</div>
+      </div>
+      <div class="plan-badge">PRO</div>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────── -->
+  <div class="main">
+
+    <!-- Top filter bar -->
+    <div class="topbar">
+      <span class="filter-label">Impact:</span>
+      <div class="chip active">Hoch</div>
+      <div class="chip">Mittel</div>
+      <div class="chip">Alle</div>
+      <span class="filter-label" style="margin-left:8px;">Branche:</span>
+      <div class="chip active">Energie</div>
+      <div class="chip">Recht</div>
+      <div class="chip">IT</div>
+      <div class="chip">Finanzen</div>
+      <div class="chip">Alle Branchen</div>
+      <div class="topbar-spacer"></div>
+      <div class="topbar-search">
+        <span>🔍</span> Artikel durchsuchen…
+      </div>
+    </div>
+
+    <!-- Feed -->
+    <div class="feed">
+
+      <!-- Trial Banner -->
+      <div class="trial-banner">
+        <span>Sie testen <strong>IntelliStream Pro</strong> — noch 27 Tage</span>
+        <button class="trial-btn">Jetzt upgraden →</button>
+      </div>
+
+      <!-- Featured Article (full-width banner) -->
+      <div class="article-card featured">
+        <div class="featured-img-placeholder">
+          <div class="featured-overlay">
+            <div class="breaking-badge">⚡ Breaking</div>
+            <div class="featured-title">EU-Kommission verschärft Klimaziele: Neue verbindliche Grenzwerte ab 2026</div>
+          </div>
+        </div>
+        <div class="card-row-content" style="padding:14px 20px 0;">
+          <div class="card-meta">
+            <span class="source-label">EUR-Lex</span>
+            <span class="dot">·</span>
+            <span class="time-label">vor 2 Stunden</span>
+            <span class="dot">·</span>
+            <span class="impact-badge high"><span class="impact-dot"></span> Hoher Impact</span>
+          </div>
+          <p class="card-summary">Die Europäische Kommission hat neue verbindliche Klimaschutzziele für 2030 verabschiedet. Unternehmen im Energiesektor sind ab 2026 zur CO₂-Berichterstattung verpflichtet. Die Richtlinie tritt 20 Tage nach Veröffentlichung im Amtsblatt in Kraft.</p>
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            <span class="tag">Klimapolitik</span>
+            <span class="tag">EU-Recht</span>
+            <span class="tag">Energie</span>
+            <span class="tag">CO₂-Berichterstattung</span>
+          </div>
+          <div class="card-actions">
+            <div class="relevance">
+              <div class="rel-bar"><div class="rel-fill" style="width:92%"></div></div>
+              <span class="rel-label">92</span>
+            </div>
+            <button class="action-btn">🔖</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Article 2 — horizontal layout -->
+      <div class="article-card">
+        <div class="card-row">
+          <div class="card-row-content">
+            <div class="card-meta">
+              <span class="source-label">BNetzA</span>
+              <span class="dot">·</span>
+              <span class="time-label">vor 4 Stunden</span>
+              <span class="dot">·</span>
+              <span class="impact-badge high"><span class="impact-dot"></span> Hoher Impact</span>
+            </div>
+            <div class="card-title">Bundesnetzagentur erhöht Netzentgelte: +18% ab Januar 2026</div>
+            <p class="card-summary">Die Bundesnetzagentur hat neue Netzentgeltverordnungen veröffentlicht. Für Industriekunden im Mittelspannungsnetz gelten ab Q1 2026 deutlich höhere Durchleitungskosten. Betroffene Unternehmen müssen bis Oktober neue Verträge aushandeln.</p>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            <span class="tag">Netzentgelte</span>
+            <span class="tag">BNetzA</span>
+            <span class="tag">Industriekunden</span>
+          </div>
+          <div class="card-actions">
+            <div class="relevance">
+              <div class="rel-bar"><div class="rel-fill" style="width:87%"></div></div>
+              <span class="rel-label">87</span>
+            </div>
+            <button class="action-btn">🔖</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Article 3 -->
+      <div class="article-card">
+        <div class="card-row">
+          <div class="card-row-content">
+            <div class="card-meta">
+              <span class="source-label">BMWK</span>
+              <span class="dot">·</span>
+              <span class="time-label">vor 6 Stunden</span>
+              <span class="dot">·</span>
+              <span class="impact-badge high"><span class="impact-dot"></span> Hoher Impact</span>
+            </div>
+            <div class="card-title">EEG-Novelle 2025: Solardeckel wird abgeschafft, neue Vergütungssätze verabschiedet</div>
+            <p class="card-summary">Das Bundeswirtschaftsministerium hat die finale EEG-Novelle 2025 veröffentlicht. Der bisherige 52-GW-Deckel entfällt rückwirkend, neue Ausschreibungsmengen für Wind Onshore steigen um 40%. Einspeisetarife für Kleinanlagen werden neu gestaffelt.</p>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            <span class="tag">EEG</span>
+            <span class="tag">Solar</span>
+            <span class="tag">Förderung</span>
+            <span class="tag">Wind Onshore</span>
+          </div>
+          <div class="card-actions">
+            <div class="relevance">
+              <div class="rel-bar"><div class="rel-fill" style="width:95%"></div></div>
+              <span class="rel-label">95</span>
+            </div>
+            <button class="action-btn" style="color:#d97706;">🔖</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Article 4 -->
+      <div class="article-card">
+        <div class="card-row">
+          <div class="card-row-content">
+            <div class="card-meta">
+              <span class="source-label">PV Magazine</span>
+              <span class="dot">·</span>
+              <span class="time-label">vor 9 Stunden</span>
+              <span class="dot">·</span>
+              <span class="impact-badge medium"><span class="impact-dot"></span> Mittlerer Impact</span>
+            </div>
+            <div class="card-title">Rekordinstallation: 14 GW Photovoltaik in den ersten 5 Monaten 2026</div>
+            <p class="card-summary">Deutschland verzeichnet eine Rekordinstallationsrate bei Solaranlagen. Balkonkraftwerke und gewerbliche Dachanlagen treiben das Wachstum deutlich an. Netzbetreiber warnen vor Engpässen im Verteilnetz in ländlichen Gebieten.</p>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="card-tags">
+            <span class="tag">Photovoltaik</span>
+            <span class="tag">Statistik</span>
+            <span class="tag">Netz</span>
+          </div>
+          <div class="card-actions">
+            <div class="relevance">
+              <div class="rel-bar"><div class="rel-fill" style="width:74%"></div></div>
+              <span class="rel-label">74</span>
+            </div>
+            <button class="action-btn">🔖</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /feed -->
+  </div><!-- /main -->
+</div><!-- /app -->
+</body>
+</html>

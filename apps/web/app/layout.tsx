@@ -3,13 +3,13 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "IntelliStream — KI-Brancheninformationen",
-    template: "%s | IntelliStream",
+    default: "DistillFeed — KI-Brancheninformationen",
+    template: "%s | DistillFeed",
   },
   description:
     "Tagesaktuelle, KI-aufbereitete Fachinformationen aus 20 Branchen. Personalisiert, quellentransparent, bezahlbar.",
   openGraph: {
-    siteName: "IntelliStream",
+    siteName: "DistillFeed",
     locale: "de_DE",
     type: "website",
   },

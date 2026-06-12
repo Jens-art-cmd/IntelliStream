@@ -1,9 +1,22 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Fraunces, Hanken_Grotesk, Space_Mono } from "next/font/google";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import SidebarNav from "@/components/dashboard/SidebarNav";
 import LogoutButton from "@/components/dashboard/LogoutButton";
 import TrialBanner from "@/components/dashboard/TrialBanner";
 import { getTrialInfo } from "@/lib/trial";
+
+const display = Fraunces({ subsets: ["latin"], display: "swap", variable: "--font-display", axes: ["opsz", "SOFT"] });
+const body    = Hanken_Grotesk({ subsets: ["latin"], display: "swap", variable: "--font-body" });
+const mono    = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], display: "swap", variable: "--font-mono" });
+
+const C = {
+  paper: "#F7F5F0", paperDeep: "#F1EDE4",
+  ink: "#1A1813", inkSoft: "#57534A", inkFaint: "#8C887E",
+  amber: "#FFB300", amberDeep: "#E08900",
+  line: "#E2DDD2", surface: "#FFFFFF",
+};
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createSupabaseServerClient();
@@ -12,7 +25,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session) redirect("/login");
 
   const email = session.user.email ?? "";
-  const initials = email.slice(0, 2).toUpperCase();
+  const name  = session.user.user_metadata?.name as string | undefined;
+  const initials = name
+    ? name.split(" ").map((w: string) => w[0]).slice(0, 2).join("").toUpperCase()
+    : email.slice(0, 2).toUpperCase();
 
   const { data: userData } = await supabase
     .from("users")
@@ -26,58 +42,74 @@ export default async function DashboardLayout({ children }: { children: React.Re
   });
 
   return (
-    <div className="flex h-screen" style={{ background: "#e8eef5" }}>
+    <div
+      className={`${display.variable} ${body.variable} ${mono.variable} flex h-screen overflow-hidden`}
+      style={{ fontFamily: "var(--font-body), system-ui, sans-serif", background: C.paper }}
+    >
+      {/* ── Skip to content (a11y) ──────────────────────────── */}
+      <a href="#main-content" className="skip-to-content">Zum Inhalt springen</a>
 
       {/* ── Sidebar ─────────────────────────────────────────── */}
       <aside
-        className="w-[240px] flex-shrink-0 flex flex-col"
+        className="w-[240px] flex-shrink-0 flex flex-col overflow-y-auto"
         style={{
-          background: "#e8eef5",
-          boxShadow: "6px 0 20px #c5cad3, -2px 0 6px #ffffff",
+          background: C.paperDeep,
+          borderRight: `1px solid ${C.line}`,
         }}
       >
-        {/* Logo */}
-        <div className="px-5 py-5 mb-1">
-          <div className="flex items-center gap-3">
-            {/* Gold neumorphic logo mark */}
-            <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)",
-                boxShadow: "4px 4px 8px #c5cad3, -2px -2px 6px #ffffff",
-              }}
+        {/* Wordmark */}
+        <div className="px-5 pt-5 pb-4" style={{ borderBottom: `1px solid ${C.line}` }}>
+          <Link
+            href="/dashboard/feed"
+            className="block"
+            aria-label="DistillFeed — Zurück zum Feed"
+          >
+            <p
+              className="text-[18px] font-semibold leading-none mb-0.5"
+              style={{ fontFamily: "var(--font-display), Georgia, serif", color: C.ink }}
             >
-              <span className="text-[12px] font-black tracking-tight text-white drop-shadow-sm">IS</span>
+              Distill<span style={{ color: C.amberDeep }}>Feed</span>
+            </p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="block w-4 h-px" style={{ background: C.amberDeep }} />
+              <span
+                className="text-[9px] font-semibold uppercase"
+                style={{ letterSpacing: "0.18em", color: C.inkFaint }}
+              >
+                KI-Brancheninformation
+              </span>
             </div>
-            <div>
-              <p className="text-[14px] font-bold tracking-tight text-neutral-800 leading-none">
-                IntelliStream
-              </p>
-              <p className="text-[10px] text-neutral-500 mt-0.5 leading-none font-medium">
-                Fachinformation · KI
-              </p>
-            </div>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation */}
         <SidebarNav />
 
         {/* User footer */}
-        <div className="px-4 pb-5 pt-3">
-          {/* User pill */}
+        <div className="px-4 pb-5 pt-3 mt-auto" style={{ borderTop: `1px solid ${C.line}` }}>
           <div
-            className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl mb-2"
-            style={{ boxShadow: "inset 3px 3px 6px #c5cad3, inset -3px -3px 6px #ffffff" }}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl mb-2"
+            style={{ background: C.paper, border: `1px solid ${C.line}` }}
           >
+            {/* Avatar */}
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #ffca28 0%, #e08900 100%)" }}
+              className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
+              style={{ background: C.amber, color: "#1A1100" }}
             >
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium truncate text-neutral-600">{email}</p>
+              <p
+                className="text-[11px] font-medium truncate leading-tight"
+                style={{ color: C.inkSoft }}
+              >
+                {name ?? email}
+              </p>
+              {name && (
+                <p className="text-[10px] truncate leading-tight" style={{ color: C.inkFaint }}>
+                  {email}
+                </p>
+              )}
             </div>
           </div>
           <LogoutButton />
@@ -85,8 +117,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </aside>
 
       {/* ── Main content ────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto" style={{ background: "#e8eef5" }}>
-        <div className="max-w-3xl mx-auto px-6 pt-5">
+      <main id="main-content" className="flex-1 overflow-y-auto flex flex-col">
+        <div className="px-6 pt-5 max-w-5xl w-full mx-auto">
           <TrialBanner status={trialInfo.status} daysLeft={trialInfo.daysLeft} />
         </div>
         {children}

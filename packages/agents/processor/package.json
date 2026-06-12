@@ -1,5 +1,5 @@
 {
-  "name": "@intellistream/agents-processor",
+  "name": "@distillfeed/agents-processor",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
-    "@intellistream/shared": "*",
+    "@distillfeed/shared": "*",
     "dotenv": "^17.4.2",
     "openai": "^6.42.0"
   },

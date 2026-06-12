@@ -6,7 +6,7 @@
  * that are 'broken' (>= 3 consecutive failures) — asks Claude to suggest
  * replacement feed URLs.
  *
- * Run:  npm run start:check -w @intellistream/agents-scout
+ * Run:  npm run start:check -w @distillfeed/agents-scout
  */
 
 import { createRequire } from "module";
@@ -44,7 +44,7 @@ interface CheckResult {
 // HTTP helpers
 // ---------------------------------------------------------------------------
 
-const USER_AGENT = "IntelliStream-HealthChecker/1.0 (+https://intellistream.de)";
+const USER_AGENT = "DistillFeed-HealthChecker/1.0 (+https://distillfeed.eu)";
 const HEAD_TIMEOUT_MS = 10_000;
 const CONTENT_BYTES = 200;
 

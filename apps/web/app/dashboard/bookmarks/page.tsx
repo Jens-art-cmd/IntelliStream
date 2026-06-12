@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Bookmark } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import ArticleCard from "@/components/feed/ArticleCard";
 
-export const metadata: Metadata = { title: "Lesezeichen · IntelliStream" };
+export const metadata: Metadata = { title: "Lesezeichen · DistillFeed" };
 
 export default async function BookmarksPage() {
   const supabase = await createSupabaseServerClient();
@@ -13,16 +14,20 @@ export default async function BookmarksPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any;
 
-  // 1) Lesezeichen-IDs holen, nach Speicherzeitpunkt sortiert
-  const { data: bookmarkRows } = await db
-    .from("bookmarks")
-    .select("article_id, created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  const [{ data: bookmarkRows }, { data: industriesData }] = await Promise.all([
+    db
+      .from("bookmarks")
+      .select("article_id, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase.from("industries").select("id, name"),
+  ]);
 
   const articleIds: string[] = (bookmarkRows ?? []).map((b: any) => b.article_id as string);
+  const industryMap: Record<number, string> = Object.fromEntries(
+    (industriesData ?? []).map((i: { id: number; name: string }) => [i.id, i.name])
+  );
 
-  // 2) Artikel dazu laden (falls vorhanden)
   let articles: {
     id: string;
     title: string;
@@ -43,19 +48,29 @@ export default async function BookmarksPage() {
       .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
       .in("id", articleIds);
 
-    // Reihenfolge der Lesezeichen beibehalten
     const byId = Object.fromEntries((data ?? []).map((a) => [a.id, a]));
     articles = articleIds.map((id) => byId[id]).filter(Boolean);
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-7">
+    <div className="max-w-5xl mx-auto px-6 py-7">
 
       {/* ── Header ───────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tighter-md text-neutral-900">Lesezeichen</h1>
-          <p className="text-xs text-neutral-400 mt-0.5">
+          <div className="flex items-center gap-2.5 mb-1.5">
+            <span className="block w-5 h-px" style={{ background: "#E08900" }} />
+            <span className="text-[10px] font-semibold uppercase" style={{ letterSpacing: "0.2em", color: "#E08900" }}>
+              Lesezeichen
+            </span>
+          </div>
+          <h1
+            className="text-[22px] font-light leading-tight"
+            style={{ fontFamily: "var(--font-display), Georgia, serif", color: "#1A1813", letterSpacing: "-0.015em" }}
+          >
+            Gespeicherte Artikel
+          </h1>
+          <p className="text-xs mt-1" style={{ color: "#8C887E" }}>
             {articles.length === 0
               ? "Noch keine Artikel gespeichert"
               : `${articles.length} gespeicherte${articles.length !== 1 ? " Artikel" : "r Artikel"}`}
@@ -65,23 +80,26 @@ export default async function BookmarksPage() {
 
       {/* ── Empty state ──────────────────────────────────── */}
       {articles.length === 0 && (
-        <div className="bg-white border border-neutral-100 rounded-xl text-center py-16 px-6 shadow-xs">
+        <div
+          className="rounded-xl text-center py-14 px-6"
+          style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
+        >
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm"
-            style={{ background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)" }}
+            className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+            style={{ background: "#FFF6E0", border: "1px solid #FFD966" }}
           >
-            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-            </svg>
+            <Bookmark size={20} strokeWidth={1.75} color="#E08900" />
           </div>
-          <h3 className="text-sm font-semibold text-neutral-800 mb-1">Noch keine Lesezeichen</h3>
-          <p className="text-xs text-neutral-500 max-w-xs mx-auto leading-relaxed mb-5">
+          <h3 className="text-sm font-semibold mb-1" style={{ color: "#1A1813" }}>
+            Noch keine Lesezeichen
+          </h3>
+          <p className="text-xs max-w-xs mx-auto leading-relaxed mb-5" style={{ color: "#57534A" }}>
             Klicke auf das Lesezeichen-Symbol bei einem Artikel, um ihn hier zu speichern.
           </p>
           <Link
             href="/dashboard/feed"
-            className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl text-neutral-900 shadow-sm hover:shadow-md hover:-translate-y-px transition-all duration-200"
-            style={{ background: "linear-gradient(135deg, #ffca28 0%, #ffb300 100%)" }}
+            className="inline-flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-xl hover:-translate-y-px transition-all duration-200"
+            style={{ background: "#FFB300", color: "#1A1100", boxShadow: "0 4px 14px rgba(224,137,0,0.22)" }}
           >
             Zum Feed
             <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -99,6 +117,7 @@ export default async function BookmarksPage() {
               key={article.id}
               article={article}
               isBookmarked={true}
+              industryName={industryMap[article.industry_id]}
             />
           ))}
         </div>

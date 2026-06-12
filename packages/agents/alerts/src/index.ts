@@ -1,5 +1,5 @@
 /**
- * IntelliStream Alert-Delivery-Agent
+ * DistillFeed Alert-Delivery-Agent
  *
  * Läuft täglich um 08:00 UTC (GitHub Actions).
  * Prüft neue Artikel der letzten 24h gegen alle aktiven User-Alerts
@@ -9,8 +9,8 @@
  *   SUPABASE_URL        — Supabase-Projekt-URL
  *   SUPABASE_SERVICE_KEY — Service-Role-Key (liest user_alerts + users)
  *   RESEND_API_KEY      — Resend API Key
- *   RESEND_FROM         — Absenderadresse, z.B. "alerts@intellistream.de"
- *   APP_URL             — Basis-URL, z.B. "https://intellistream.de"
+ *   RESEND_FROM         — Absenderadresse, z.B. "alerts@distillfeed.eu"
+ *   APP_URL             — Basis-URL, z.B. "https://distillfeed.eu"
  */
 
 import "dotenv/config";
@@ -21,8 +21,8 @@ import { Resend } from "resend";
 const SUPABASE_URL         = process.env["SUPABASE_URL"]!;
 const SUPABASE_SERVICE_KEY = process.env["SUPABASE_SERVICE_KEY"]!;
 const RESEND_API_KEY       = process.env["RESEND_API_KEY"]!;
-const RESEND_FROM          = process.env["RESEND_FROM"] ?? "IntelliStream Alerts <alerts@intellistream.de>";
-const APP_URL              = process.env["APP_URL"] ?? "https://intellistream.de";
+const RESEND_FROM          = process.env["RESEND_FROM"] ?? "DistillFeed Alerts <alerts@distillfeed.eu>";
+const APP_URL              = process.env["APP_URL"] ?? "https://distillfeed.eu";
 const DRY_RUN              = process.env["DRY_RUN"] === "true";
 const LOOKBACK_HOURS       = parseInt(process.env["LOOKBACK_HOURS"] ?? "24", 10);
 
@@ -119,7 +119,7 @@ function buildEmailHtml(group: MatchGroup): string {
         <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#ffca28,#ffb300);padding:24px 32px;">
-            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7a5200;">IntelliStream Alerts</p>
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7a5200;">DistillFeed Alerts</p>
             <h1 style="margin:4px 0 0;font-size:20px;font-weight:800;color:#1a1a1a;">🔔 ${alert.name}</h1>
           </td>
         </tr>
@@ -150,7 +150,7 @@ function buildEmailHtml(group: MatchGroup): string {
         <tr>
           <td style="padding:16px 32px;border-top:1px solid #f0f0f0;">
             <p style="margin:0;font-size:11px;color:#aaa;">
-              Sie erhalten diese E-Mail, weil Sie den Alert „${alert.name}" in IntelliStream eingerichtet haben.
+              Sie erhalten diese E-Mail, weil Sie den Alert „${alert.name}" in DistillFeed eingerichtet haben.
               <a href="${APP_URL}/dashboard/alerts" style="color:#aaa;">Alerts verwalten</a>
             </p>
           </td>

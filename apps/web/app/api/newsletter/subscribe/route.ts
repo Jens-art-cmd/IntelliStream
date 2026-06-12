@@ -3,8 +3,6 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env["RESEND_API_KEY"]);
-
 function buildConfirmationEmail(confirmUrl: string, email: string): string {
   return `<!DOCTYPE html>
 <html lang="de">
@@ -134,6 +132,7 @@ export async function POST() {
   }
 
   // 6. Send confirmation email
+  const resend = new Resend(process.env["RESEND_API_KEY"]);
   const appUrl = process.env["APP_URL"] ?? "https://distillfeed.eu";
   const confirmUrl = `${appUrl}/newsletter/bestaetigt?token=${tokenRow.token}`;
 

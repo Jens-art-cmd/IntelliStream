@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import sensible from "@fastify/sensible";
-import { createServerClient } from "@intellistream/shared";
+import { createServerClient } from "@distillfeed/shared";
 import type { User } from "@supabase/supabase-js";
 
 import articlesRoutes from "./routes/articles.js";

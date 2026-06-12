@@ -83,7 +83,7 @@ async function fetchViaHtml(url: string): Promise<string> {
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent": "IntelliStream-Processor/1.0",
+        "User-Agent": "DistillFeed-Processor/1.0",
         "Accept":     "text/html,application/xhtml+xml",
       },
       signal: AbortSignal.timeout(TIMEOUT_MS),

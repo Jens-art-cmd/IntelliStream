@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { createServiceClient } from "@intellistream/shared";
+import { createServiceClient } from "@distillfeed/shared";
 
 const webhooksRoutes: FastifyPluginAsync = async (app) => {
   // POST /webhooks/stripe — Stripe subscription lifecycle

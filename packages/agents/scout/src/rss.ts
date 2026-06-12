@@ -17,7 +17,7 @@ const parser = new XMLParser({
 
 export async function fetchRssFeed(feedUrl: string): Promise<FeedItem[]> {
   const res = await fetch(feedUrl, {
-    headers: { "User-Agent": "IntelliStream-Scout/1.0 (+https://intellistream.de)" },
+    headers: { "User-Agent": "DistillFeed-Scout/1.0 (+https://distillfeed.eu)" },
     signal: AbortSignal.timeout(20_000),
   });
 

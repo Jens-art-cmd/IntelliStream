@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Bookmark } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 interface Props {
@@ -54,27 +55,17 @@ export default function BookmarkButton({ articleId, initialBookmarked, size = "s
         size === "md" ? "w-9 h-9" : "w-7 h-7"
       } ${isPending ? "opacity-60" : ""}`}
       style={{
-        borderRadius: "10px",
-        background: "#e8eef5",
-        boxShadow: bookmarked
-          ? "inset 2px 2px 5px #c5cad3, inset -2px -2px 5px #ffffff"
-          : "3px 3px 6px #c5cad3, -3px -3px 6px #ffffff",
-        color: bookmarked ? "#f59e0b" : "#9aa2b1",
+        borderRadius: "8px",
+        background: bookmarked ? "#FFF6E0" : "#FAF8F4",
+        border: bookmarked ? "1px solid #FFD966" : "1px solid #E2DDD2",
+        color: bookmarked ? "#E08900" : "#8C887E",
       }}
     >
-      <svg
+      <Bookmark
         className={iconSize}
-        viewBox="0 0 24 24"
         fill={bookmarked ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth={bookmarked ? "0" : "2"}
-      >
-        <path
-          d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-      </svg>
+        strokeWidth={bookmarked ? 0 : 2}
+      />
     </button>
   );
 }

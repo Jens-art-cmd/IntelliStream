@@ -9,7 +9,7 @@
  *   - search_articles()  — semantische Suche
  *   - get_personalized_feed() — Cosinus-Ähnlichkeit mit User-Profil
  *
- * Run:  npm run start:embed -w @intellistream/agents-processor
+ * Run:  npm run start:embed -w @distillfeed/agents-processor
  */
 
 import { createRequire } from "module";

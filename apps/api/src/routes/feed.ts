@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { FeedQuerySchema } from "@intellistream/shared";
+import { FeedQuerySchema } from "@distillfeed/shared";
 
 const feedRoutes: FastifyPluginAsync = async (app) => {
   // GET /feed — personalized article feed

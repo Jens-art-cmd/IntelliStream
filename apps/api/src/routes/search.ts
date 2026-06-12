@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import OpenAI from "openai";
-import { SearchQuerySchema } from "@intellistream/shared";
+import { SearchQuerySchema } from "@distillfeed/shared";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI | null {

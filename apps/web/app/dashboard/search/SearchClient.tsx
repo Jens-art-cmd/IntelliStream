@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
+import { Search, Loader2 } from "lucide-react";
 
 interface SearchResult {
   id: string;
@@ -18,17 +19,17 @@ interface SearchResult {
 type SearchMode = "hybrid" | "semantic" | "fulltext";
 
 const MODE_OPTIONS: { value: SearchMode; label: string; desc: string }[] = [
-  { value: "hybrid",   label: "Smart",      desc: "Semantik + Volltext kombiniert" },
-  { value: "semantic", label: "Semantisch", desc: "Bedeutung, nicht nur Stichwörter" },
-  { value: "fulltext", label: "Volltext",   desc: "Exakte Begriffe und Phrasen" },
+  { value: "hybrid",   label: "Smart",       desc: "Semantik + Volltext kombiniert" },
+  { value: "semantic", label: "Semantisch",  desc: "Bedeutung, nicht nur Stichwörter" },
+  { value: "fulltext", label: "Volltext",    desc: "Exakte Begriffe und Phrasen" },
 ];
 
-const IMPACT_COLOR: Record<string, string> = {
-  high:   "bg-red-50 text-red-600 border-red-100",
-  medium: "bg-amber-50 text-amber-600 border-amber-100",
-  low:    "bg-emerald-50 text-emerald-600 border-emerald-100",
+// Editorial impact badges
+const IMPACT_STYLE: Record<string, React.CSSProperties> = {
+  high:   { background: "#FEF0EE", color: "#C0392B", border: "1px solid #F5C6C1" },
+  medium: { background: "#FFF6E0", color: "#E08900", border: "1px solid #FFD966" },
+  low:    { background: "#F0F7F0", color: "#2D7553", border: "1px solid #A8D5A8" },
 };
-
 const IMPACT_LABEL: Record<string, string> = {
   high: "Hoch", medium: "Mittel", low: "Gering",
 };
@@ -50,14 +51,11 @@ export default function SearchClient() {
   async function search(q: string, m: SearchMode) {
     if (!q.trim()) return;
     setError(null);
-
     startTransition(async () => {
       try {
         const params = new URLSearchParams({ q: q.trim(), mode: m, limit: "20" });
         const res = await fetch(`/api/search?${params}`);
-
         if (!res.ok) throw new Error(`Suche fehlgeschlagen (${res.status})`);
-
         const json = await res.json() as { results: SearchResult[]; mode: string };
         setResults(json.results ?? []);
         setMeta({ mode: json.mode, count: json.results?.length ?? 0 });
@@ -68,35 +66,40 @@ export default function SearchClient() {
     });
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    search(query, mode);
-  }
-
-  function handleModeChange(m: SearchMode) {
-    setMode(m);
-    if (query.trim()) search(query, m);
-  }
+  function handleSubmit(e: React.FormEvent) { e.preventDefault(); search(query, mode); }
+  function handleModeChange(m: SearchMode) { setMode(m); if (query.trim()) search(query, m); }
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-7">
 
       {/* ── Header ───────────────────────────────────────── */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold tracking-tighter-md text-neutral-900">Suche</h1>
-        <p className="text-xs text-neutral-400 mt-0.5">
-          Durchsuche alle Branchennachrichten — semantisch oder per Volltext.
+        <div className="flex items-center gap-2.5 mb-1.5">
+          <span className="block w-5 h-px" style={{ background: "#E08900" }} />
+          <span className="text-[10px] font-semibold uppercase" style={{ letterSpacing: "0.2em", color: "#E08900" }}>
+            Suche
+          </span>
+        </div>
+        <h1
+          className="text-[22px] font-light leading-tight"
+          style={{ fontFamily: "var(--font-display), Georgia, serif", color: "#1A1813", letterSpacing: "-0.015em" }}
+        >
+          Artikel durchsuchen
+        </h1>
+        <p className="text-xs mt-1" style={{ color: "#8C887E" }}>
+          Semantisch oder per Volltext — alle Branchennachrichten auf einmal.
         </p>
       </div>
 
       {/* ── Search form ──────────────────────────────────── */}
-      <div className="bg-white border border-neutral-100 rounded-xl p-4 mb-5 shadow-xs">
+      <div className="rounded-xl p-4 mb-5" style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}>
         <form onSubmit={handleSubmit} className="flex gap-2.5 mb-4">
           <div className="relative flex-1">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-              </svg>
+            <span
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: "#8C887E" }}
+            >
+              <Search className="w-4 h-4" strokeWidth={1.75} />
             </span>
             <input
               ref={inputRef}
@@ -104,25 +107,23 @@ export default function SearchClient() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="z.B. DSGVO Bußgeld, NIS2 Anforderungen, EV-Marktanteil…"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-neutral-150 rounded-lg bg-neutral-25 focus:outline-none focus:border-amber-400 focus:bg-white focus:ring-gold transition-all"
+              className="fl-input w-full pl-10 pr-4 py-2.5 text-sm"
               autoFocus
             />
           </div>
           <button
             type="submit"
             disabled={!query.trim() || isPending}
-            className="px-5 py-2.5 text-sm font-bold rounded-lg text-neutral-900 shadow-sm hover:shadow-md hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none transition-all duration-200"
-            style={{ background: isPending || !query.trim()
-              ? undefined
-              : "linear-gradient(135deg, #ffca28 0%, #ffb300 100%)"
+            className="px-5 py-2.5 text-sm font-bold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none hover:-translate-y-px transition-all duration-200 cursor-pointer"
+            style={{
+              background: query.trim() && !isPending ? "#FFB300" : "#E2DDD2",
+              color: query.trim() && !isPending ? "#1A1100" : "#8C887E",
+              boxShadow: query.trim() && !isPending ? "0 4px 14px rgba(224,137,0,0.22)" : "none",
             }}
           >
             {isPending ? (
               <span className="flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 Suche…
               </span>
             ) : "Suchen"}
@@ -131,7 +132,10 @@ export default function SearchClient() {
 
         {/* Mode selector */}
         <div className="flex items-center gap-3">
-          <span className="text-2xs font-bold tracking-[.08em] uppercase text-neutral-400 flex-shrink-0">
+          <span
+            className="text-[9px] font-bold uppercase flex-shrink-0"
+            style={{ letterSpacing: "0.14em", color: "#8C887E" }}
+          >
             Modus
           </span>
           <div className="flex items-center gap-1">
@@ -139,17 +143,20 @@ export default function SearchClient() {
               <button
                 key={opt.value}
                 onClick={() => handleModeChange(opt.value)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer"
+                style={
                   mode === opt.value
-                    ? "bg-neutral-900 text-white shadow-sm"
-                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
-                }`}
+                    ? { background: "#1A1813", color: "#F7F5F0" }
+                    : { color: "#57534A" }
+                }
+                onMouseEnter={e => { if (mode !== opt.value) (e.currentTarget as HTMLElement).style.background = "#F1EDE4"; }}
+                onMouseLeave={e => { if (mode !== opt.value) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
               >
                 {opt.label}
               </button>
             ))}
           </div>
-          <span className="text-2xs text-neutral-400 hidden sm:block">
+          <span className="text-[11px] hidden sm:block" style={{ color: "#8C887E" }}>
             {MODE_OPTIONS.find(o => o.value === mode)?.desc}
           </span>
         </div>
@@ -157,19 +164,19 @@ export default function SearchClient() {
 
       {/* ── Error ────────────────────────────────────────── */}
       {error && (
-        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+        <div className="mb-4 px-4 py-3 rounded-xl text-sm" style={{ background: "#FEF0EE", border: "1px solid #F5C6C1", color: "#C0392B" }}>
           {error}
         </div>
       )}
 
       {/* ── Results meta ─────────────────────────────────── */}
       {meta && !error && (
-        <p className="text-xs text-neutral-400 mb-4 font-medium">
+        <p className="text-xs mb-4 font-medium" style={{ color: "#8C887E" }}>
           {meta.count === 0
             ? "Keine Ergebnisse"
             : `${meta.count} Ergebnis${meta.count !== 1 ? "se" : ""}`}
           {meta.mode === "fulltext_fallback" && (
-            <span className="ml-2 text-amber-600 font-normal">
+            <span className="ml-2 font-normal" style={{ color: "#E08900" }}>
               (Volltext-Fallback — semantische Suche wird aktiv sobald Embeddings geladen sind)
             </span>
           )}
@@ -178,26 +185,37 @@ export default function SearchClient() {
 
       {/* ── Empty state (after search) ───────────────────── */}
       {results !== null && results.length === 0 && !error && (
-        <div className="bg-white border border-neutral-100 rounded-xl text-center py-16 shadow-xs">
-          <div className="text-3xl mb-3">🔍</div>
-          <p className="text-sm font-medium text-neutral-700">Keine Artikel gefunden für „{query}"</p>
-          <p className="text-xs text-neutral-400 mt-1">Probiere andere Suchbegriffe oder wechsle den Modus.</p>
+        <div className="rounded-xl text-center py-14" style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}>
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3"
+            style={{ background: "#FAF8F4", border: "1px solid #E2DDD2" }}
+          >
+            <Search className="w-4 h-4" strokeWidth={1.75} style={{ color: "#8C887E" }} />
+          </div>
+          <p className="text-sm font-medium" style={{ color: "#57534A" }}>
+            Keine Artikel gefunden für „{query}"
+          </p>
+          <p className="text-xs mt-1" style={{ color: "#8C887E" }}>
+            Probiere andere Suchbegriffe oder wechsle den Modus.
+          </p>
         </div>
       )}
 
       {/* ── Initial state ────────────────────────────────── */}
       {results === null && !isPending && (
-        <div className="bg-white border border-neutral-100 rounded-xl text-center py-16 shadow-xs">
+        <div className="rounded-xl text-center py-14" style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}>
           <div
             className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
-            style={{ background: "linear-gradient(135deg, #ffca28 0%, #ff8f00 100%)" }}
+            style={{ background: "#FFF6E0", border: "1px solid #FFD966" }}
           >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-            </svg>
+            <Search className="w-5 h-5" strokeWidth={1.75} style={{ color: "#E08900" }} />
           </div>
-          <p className="text-sm font-medium text-neutral-700">Gib einen Suchbegriff ein</p>
-          <p className="text-xs text-neutral-400 mt-1">Semantisch, Volltext oder kombiniert.</p>
+          <p className="text-sm font-medium" style={{ color: "#57534A" }}>
+            Gib einen Suchbegriff ein
+          </p>
+          <p className="text-xs mt-1" style={{ color: "#8C887E" }}>
+            Semantisch, Volltext oder kombiniert.
+          </p>
         </div>
       )}
 
@@ -208,43 +226,54 @@ export default function SearchClient() {
             <li key={article.id}>
               <Link
                 href={`/dashboard/article/${article.id}`}
-                className="block bg-white border border-neutral-100 rounded-xl px-5 py-4 hover:border-neutral-200 hover:shadow-card-hover hover:-translate-y-px transition-all duration-200 group"
+                className="fl-card block px-5 py-4 group cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-3 mb-1.5">
-                  <h3 className="text-sm font-semibold text-neutral-900 group-hover:text-brand-700 leading-snug line-clamp-2 tracking-tight-sm">
+                  <h3
+                    className="text-sm font-semibold leading-snug line-clamp-2 tracking-tight transition-colors"
+                    style={{ color: "#1A1813" }}
+                  >
                     {article.title}
                   </h3>
                   {article.impact_level && (
-                    <span className={`flex-shrink-0 text-2xs font-semibold px-2.5 py-0.5 rounded-full border ${IMPACT_COLOR[article.impact_level]}`}>
+                    <span
+                      className="flex-shrink-0 text-2xs font-semibold px-2.5 py-0.5 rounded-full"
+                      style={IMPACT_STYLE[article.impact_level]}
+                    >
                       {IMPACT_LABEL[article.impact_level]}
                     </span>
                   )}
                 </div>
 
                 {article.summary_medium && (
-                  <p className="text-xs text-neutral-500 leading-relaxed line-clamp-2 mb-2.5">
+                  <p className="text-xs leading-relaxed line-clamp-2 mb-2.5" style={{ color: "#57534A" }}>
                     {article.summary_medium}
                   </p>
                 )}
 
-                <div className="flex items-center gap-3 text-2xs text-neutral-400 flex-wrap">
+                <div className="flex items-center gap-3 text-2xs flex-wrap" style={{ color: "#8C887E" }}>
                   {article.published_at && (
                     <span className="font-medium">{formatDate(article.published_at)}</span>
                   )}
                   {article.relevance_score != null && (
-                    <span>Relevanz {Math.round(article.relevance_score)}%</span>
+                    <span style={{ fontFamily: "var(--font-mono), monospace" }}>
+                      Relevanz {Math.round(article.relevance_score)}%
+                    </span>
                   )}
                   {article.similarity != null && (
                     <span className="flex items-center gap-1">
-                      <span
-                        className="w-1.5 h-1.5 rounded-full"
-                        style={{ background: "linear-gradient(135deg, #ffca28, #ffb300)" }}
-                      />
-                      {Math.round(article.similarity * 100)}% Ähnlichkeit
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#FFB300" }} />
+                      <span style={{ fontFamily: "var(--font-mono), monospace" }}>
+                        {Math.round(article.similarity * 100)}% Ähnlichkeit
+                      </span>
                     </span>
                   )}
                   {article.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="bg-neutral-50 border border-neutral-100 text-neutral-500 px-1.5 py-0.5 rounded-full">
+                    <span
+                      key={tag}
+                      className="px-1.5 py-0.5 rounded-full"
+                      style={{ background: "#FAF8F4", border: "1px solid #E2DDD2" }}
+                    >
                       {tag}
                     </span>
                   ))}

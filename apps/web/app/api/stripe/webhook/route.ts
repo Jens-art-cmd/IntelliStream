@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
   );
 
-  // ── Plan-Mapping: Stripe Price ID → IntelliStream Plan ──────────────────
+  // ── Plan-Mapping: Stripe Price ID → DistillFeed Plan ──────────────────
   const planMap: Record<string, "starter" | "pro" | "enterprise"> = {
     [process.env["STRIPE_PRICE_PRO_MONTHLY"]   ?? "__none__"]: "pro",
     [process.env["STRIPE_PRICE_PRO_YEARLY"]    ?? "__none__"]: "pro",

@@ -43,7 +43,7 @@
         "url": "={{ $json.url }}",
         "options": {
           "timeout": 20000,
-          "headers": { "User-Agent": "IntelliStream-Scout/1.0" }
+          "headers": { "User-Agent": "DistillFeed-Scout/1.0" }
         }
       },
       "name": "RSS abrufen",

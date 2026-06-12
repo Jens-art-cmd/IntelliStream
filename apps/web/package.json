@@ -1,5 +1,5 @@
 {
-  "name": "@intellistream/web",
+  "name": "@distillfeed/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,9 +10,10 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@intellistream/shared": "*",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.3",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.17.0",
     "next": "^15.5.19",
     "openai": "^6.42.0",
     "react": "^18.3.1",

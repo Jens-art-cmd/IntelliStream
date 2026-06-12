@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from "fastify";
-import { UpdateUserSchema, UpdateProfileSchema } from "@intellistream/shared";
+import { UpdateUserSchema, UpdateProfileSchema } from "@distillfeed/shared";
 
 const userRoutes: FastifyPluginAsync = async (app) => {
   // GET /user/me
