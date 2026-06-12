@@ -35,7 +35,8 @@ jobs:
         run: npm install
 
       - name: Alert-Delivery ausführen
-        run: npm run start -w @distillfeed/agents-alerts
+        working-directory: packages/agents/alerts
+        run: npx tsx src/index.ts
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
