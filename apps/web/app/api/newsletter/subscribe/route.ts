@@ -144,8 +144,11 @@ export async function POST() {
   });
 
   if (mailError) {
-    console.error("[Newsletter] Mail-Fehler:", mailError);
-    return NextResponse.json({ error: "E-Mail konnte nicht gesendet werden" }, { status: 500 });
+    const detail = JSON.stringify(mailError);
+    console.error("[Newsletter] Mail-Fehler name:", (mailError as { name?: string }).name);
+    console.error("[Newsletter] Mail-Fehler message:", (mailError as { message?: string }).message);
+    console.error("[Newsletter] Mail-Fehler detail:", detail);
+    return NextResponse.json({ error: "E-Mail konnte nicht gesendet werden", detail }, { status: 500 });
   }
 
   return NextResponse.json({ message: "Bestätigungs-Mail gesendet" });
