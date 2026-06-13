@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getTrialInfo } from "@/lib/trial";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET() {
   const supabase = await createSupabaseServerClient();
@@ -18,6 +19,15 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Rate Limiting: max. 20 Alert-Erstellungen pro IP pro Stunde
+  const rl = checkRateLimit(getClientIp(request), "alerts:post", { limit: 20, windowSecs: 3600 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte versuche es später erneut." },
+      { status: 429, headers: { "Retry-After": String(rl.resetAfter) } },
+    );
+  }
+
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

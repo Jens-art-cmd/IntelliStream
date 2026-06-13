@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 function buildConfirmationEmail(confirmUrl: string, email: string): string {
   return `<!DOCTYPE html>
@@ -86,7 +88,16 @@ function buildConfirmationEmail(confirmUrl: string, email: string): string {
 </html>`;
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // 0. Rate Limiting: max. 5 Anfragen pro IP pro Stunde
+  const rl = checkRateLimit(getClientIp(request), "newsletter:subscribe", { limit: 5, windowSecs: 3600 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte versuche es später erneut." },
+      { status: 429, headers: { "Retry-After": String(rl.resetAfter) } },
+    );
+  }
+
   // 1. Auth check via session cookie
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
