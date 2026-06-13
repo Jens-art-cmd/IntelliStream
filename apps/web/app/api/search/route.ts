@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI | null {
@@ -25,6 +26,15 @@ async function getQueryEmbedding(text: string): Promise<number[] | null> {
 }
 
 export async function GET(request: NextRequest) {
+  // Rate Limiting: max. 30 Suchanfragen pro IP pro Minute
+  const rl = checkRateLimit(getClientIp(request), "search", { limit: 30, windowSecs: 60 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Zu viele Anfragen. Bitte warte einen Moment." },
+      { status: 429, headers: { "Retry-After": String(rl.resetAfter) } },
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const q           = searchParams.get("q")?.trim() ?? "";
   const mode        = searchParams.get("mode") ?? "hybrid";
