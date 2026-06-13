@@ -4,6 +4,7 @@ import { Signal, Settings2, Sparkles } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import FeedClient from "@/components/feed/FeedClient";
 import { getTrialInfo } from "@/lib/trial";
+import type { ImpactLevel } from "@/types/database";
 
 export const metadata: Metadata = { title: "Mein Feed · DistillFeed" };
 
@@ -97,7 +98,7 @@ export default async function FeedPage() {
     industry_id: number;
     tags: string[];
     relevance_score: number | null;
-    impact_level: string | null;
+    impact_level: ImpactLevel | null;
     published_at: string | null;
     is_breaking: boolean;
     source_url: string;
@@ -124,7 +125,7 @@ export default async function FeedPage() {
       articles = rpcArticles.map((a: {
         id: string; title: string; summary_short: string | null;
         summary_medium: string | null; industry_id: number; tags: string[];
-        relevance_score: number | null; impact_level: string | null;
+        relevance_score: number | null; impact_level: ImpactLevel | null;
         published_at: string | null; is_breaking: boolean;
       }) => ({
         ...a,
