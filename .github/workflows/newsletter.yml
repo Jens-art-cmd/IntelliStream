@@ -1,0 +1,93 @@
+name: Newsletter Delivery
+
+on:
+  schedule:
+    - cron: '0 7 * * *'    # Täglich 07:00 UTC → tägliche User
+    - cron: '0 7 * * 1'    # Montags 07:00 UTC → wöchentliche User
+  workflow_dispatch:
+    inputs:
+      frequency:
+        description: 'Frequenz (daily oder weekly)'
+        required: true
+        default: 'daily'
+        type: choice
+        options: [daily, weekly]
+      dry_run:
+        description: 'Dry Run (keine echten Mails)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+jobs:
+  newsletter-daily:
+    name: Täglicher Newsletter
+    runs-on: ubuntu-latest
+    # Läuft beim täglichen Cron ODER wenn manuell "daily" ausgewählt
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.frequency == 'daily' || github.event.schedule == '0 7 * * *'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: npm auf v11 upgraden
+        run: npm install -g npm@11
+
+      - name: Abhängigkeiten installieren
+        run: npm install
+
+      - name: Täglichen Newsletter versenden
+        working-directory: packages/agents/delivery
+        run: npx tsx src/index.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          APP_URL: ${{ secrets.APP_URL }}
+          FREQUENCY: daily
+          MAX_ARTICLES: "12"
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+  newsletter-weekly:
+    name: Wöchentlicher Newsletter
+    runs-on: ubuntu-latest
+    # Läuft beim wöchentlichen Cron ODER wenn manuell "weekly" ausgewählt
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.frequency == 'weekly' || github.event.schedule == '0 7 * * 1'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: npm auf v11 upgraden
+        run: npm install -g npm@11
+
+      - name: Abhängigkeiten installieren
+        run: npm install
+
+      - name: Wöchentlichen Newsletter versenden
+        working-directory: packages/agents/delivery
+        run: npx tsx src/index.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM: ${{ secrets.RESEND_FROM }}
+          APP_URL: ${{ secrets.APP_URL }}
+          FREQUENCY: weekly
+          MAX_ARTICLES: "20"
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
