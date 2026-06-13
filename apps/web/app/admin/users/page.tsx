@@ -22,16 +22,16 @@ export default async function AdminUsersPage() {
       <div className="flex items-center gap-3 mb-7">
         <Link
           href="/admin"
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg"
+          className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg"
           style={{ background: "#FFFFFF", border: "1px solid #E2DDD2", color: "#57534A" }}
         >
-          <ArrowLeft size={13} strokeWidth={1.75} />
+          <ArrowLeft size={14} strokeWidth={1.75} />
           Übersicht
         </Link>
         <div>
           <div className="flex items-center gap-2.5 mb-0.5">
             <span className="block w-5 h-px" style={{ background: "#E08900" }} />
-            <span className="text-[10px] font-semibold uppercase" style={{ letterSpacing: "0.2em", color: "#E08900" }}>Admin</span>
+            <span className="text-xs font-semibold uppercase" style={{ letterSpacing: "0.2em", color: "#E08900" }}>Admin</span>
           </div>
           <h1 className="text-[22px] font-light" style={{ fontFamily: "var(--font-display), Georgia, serif", color: "#1A1813" }}>
             User ({users?.length ?? 0})
@@ -43,10 +43,10 @@ export default async function AdminUsersPage() {
       <div className="rounded-xl overflow-hidden" style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}>
         {/* Kopfzeile */}
         <div
-          className="grid px-5 py-3 text-2xs font-bold uppercase"
+          className="grid px-5 py-3 text-xs font-bold uppercase"
           style={{
-            gridTemplateColumns: "1fr 90px 110px 70px 70px 60px",
-            letterSpacing: "0.1em", color: "#8C887E",
+            gridTemplateColumns: "1fr 100px 130px 90px 90px 80px",
+            letterSpacing: "0.08em", color: "#57534A",
             borderBottom: "1px solid #EBE7DD", background: "#FAF8F4",
           }}
         >
@@ -71,13 +71,13 @@ export default async function AdminUsersPage() {
             return (
               <div
                 key={u.id}
-                className="grid px-5 py-3 items-center text-xs"
-                style={{ gridTemplateColumns: "1fr 90px 110px 70px 70px 60px" }}
+                className="grid px-5 py-3.5 items-center text-sm"
+                style={{ gridTemplateColumns: "1fr 100px 130px 90px 90px 80px" }}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="truncate font-medium" style={{ color: "#1A1813" }}>{u.email}</span>
                   {u.is_admin && (
-                    <span className="text-2xs font-bold px-1.5 py-0.5 rounded" style={{ background: "#1A1813", color: "#FFB300" }}>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded flex-shrink-0" style={{ background: "#1A1813", color: "#FFB300" }}>
                       ADMIN
                     </span>
                   )}
@@ -85,19 +85,19 @@ export default async function AdminUsersPage() {
 
                 <span>
                   <span
-                    className="text-2xs font-bold uppercase px-2 py-0.5 rounded-full"
+                    className="text-xs font-bold uppercase px-2.5 py-1 rounded-full"
                     style={isPaid
                       ? { background: "#FFB300", color: "#1A1100" }
                       : isTrial
-                        ? { background: "#FFF6E0", color: "#E08900", border: "1px solid #FFD966" }
-                        : { background: "#F1EDE4", color: "#8C887E" }
+                        ? { background: "#FFF6E0", color: "#C07000", border: "1px solid #FFD966" }
+                        : { background: "#F1EDE4", color: "#57534A" }
                     }
                   >
                     {isPaid ? u.plan : isTrial ? "Trial" : "Free"}
                   </span>
                 </span>
 
-                <span style={{ color: isTrial ? "#E08900" : trialExpired ? "#C0392B" : "#C8C2B6" }}>
+                <span style={{ color: isTrial ? "#C07000" : trialExpired ? "#C0392B" : "#C8C2B6" }}>
                   {u.trial_ends_at
                     ? isTrial
                       ? `${daysLeft}d verbleibend`
@@ -111,17 +111,17 @@ export default async function AdminUsersPage() {
 
                 <span>
                   <span
-                    className="text-2xs font-medium px-2 py-0.5 rounded-full"
+                    className="text-xs font-medium px-2.5 py-1 rounded-full"
                     style={u.newsletter_opt_in
                       ? { background: "#F0F7F0", color: "#2D7553", border: "1px solid #A8D5A8" }
-                      : { background: "#F1EDE4", color: "#C8C2B6" }
+                      : { background: "#F1EDE4", color: "#8C887E" }
                     }
                   >
                     {u.newsletter_opt_in ? "Aktiv" : "Nein"}
                   </span>
                 </span>
 
-                <span style={{ color: "#C8C2B6" }}>
+                <span style={{ color: "#8C887E" }}>
                   {new Date(u.created_at).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}
                 </span>
               </div>
