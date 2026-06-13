@@ -187,7 +187,7 @@ async function run() {
     }
 
     // Mail versenden
-    const { error: mailErr } = await resend!.emails.send({
+    const { data: mailData, error: mailErr } = await resend!.emails.send({
       from:    RESEND_FROM,
       to:      user.email,
       subject,
@@ -200,13 +200,14 @@ async function run() {
       continue;
     }
 
-    // Versand protokollieren
+    // Versand protokollieren (inkl. Resend-ID für Webhook-Tracking)
     await supabase.from("newsletters").insert({
-      user_id:      user.id,
-      article_ids:  userArticles.map(a => a.id),
-      subject_line: subject,
-      html_content: html,
-      variant:      FREQUENCY,
+      user_id:         user.id,
+      article_ids:     userArticles.map(a => a.id),
+      subject_line:    subject,
+      html_content:    html,
+      variant:         FREQUENCY,
+      resend_email_id: mailData?.id ?? null,
     });
 
     console.log(`[Delivery] ✓ ${user.email} — ${userArticles.length} Artikel`);
