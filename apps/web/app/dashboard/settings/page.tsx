@@ -35,7 +35,7 @@ export default async function SettingsPage({
   ]);
 
   const { data: userData } = user
-    ? await supabase.from("users").select("industry_subscriptions, plan, trial_ends_at, newsletter_opt_in, newsletter_frequency").eq("id", user.id).single()
+    ? await supabase.from("users").select("industry_subscriptions, plan, trial_ends_at, newsletter_opt_in, newsletter_frequency, newsletter_time").eq("id", user.id).single()
     : { data: null };
 
   const currentSubscriptions: number[] = userData?.industry_subscriptions ?? [];
@@ -44,6 +44,7 @@ export default async function SettingsPage({
   const isPaid = plan !== "free";
   const newsletterOptIn: boolean = userData?.newsletter_opt_in ?? false;
   const newsletterFrequency: "daily" | "weekly" | "realtime" = userData?.newsletter_frequency ?? "weekly";
+  const newsletterTime: string = userData?.newsletter_time ?? "07:00";
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-7">
@@ -274,6 +275,7 @@ export default async function SettingsPage({
           <NewsletterToggle
             initialOptIn={newsletterOptIn}
             frequency={newsletterFrequency === "realtime" ? "daily" : newsletterFrequency}
+            initialTime={newsletterTime}
           />
         </div>
       </div>
