@@ -134,7 +134,7 @@ export async function POST() {
   // 6. Send confirmation email
   const resend = new Resend(process.env["RESEND_API_KEY"]);
   const appUrl = process.env["APP_URL"] ?? "https://distillfeed.eu";
-  const confirmUrl = `${appUrl}/newsletter/bestaetigt?token=${tokenRow.token}`;
+  const confirmUrl = `${appUrl}/api/newsletter/confirm?token=${tokenRow.token}`;
 
   const { error: mailError } = await resend.emails.send({
     from: process.env["RESEND_FROM"] ?? "DistillFeed <newsletter@distillfeed.eu>",
