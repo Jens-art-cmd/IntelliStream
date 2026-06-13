@@ -8,6 +8,7 @@ import { getTrialInfo } from "@/lib/trial";
 import BookmarkButton from "@/components/feed/BookmarkButton";
 import ThumbsButton from "@/components/feed/ThumbsButton";
 import BackButton from "@/components/ui/BackButton";
+import SimilarArticles from "@/components/feed/SimilarArticles";
 
 // Next.js 15: params ist ein Promise
 interface Props { params: Promise<{ id: string }> }
@@ -38,9 +39,11 @@ export default async function ArticleDetailPage({ params }: Props) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Embedding für Ähnlichkeitssuche + Bookmark + Plan parallel laden
   const [
     { data: bm },
     { data: userData },
+    { data: embeddingRow },
   ] = await Promise.all([
     user
       ? supabase.from("bookmarks").select("id").eq("user_id", user.id).eq("article_id", id).maybeSingle()
@@ -48,7 +51,32 @@ export default async function ArticleDetailPage({ params }: Props) {
     user
       ? supabase.from("users").select("plan, trial_ends_at").eq("id", user.id).single()
       : Promise.resolve({ data: null }),
+    supabase.from("articles").select("embedding, industry_id").eq("id", id).single(),
   ]);
+
+  // Ähnliche Artikel via Vektor-Ähnlichkeit (nur wenn Embedding vorhanden)
+  let similarArticles: {
+    id: string; title: string; summary_medium: string | null;
+    industry_id: number; impact_level: ImpactLevel | null; published_at: string | null;
+  }[] = [];
+
+  if (embeddingRow?.embedding) {
+    const { data: similar } = await supabase.rpc("search_articles", {
+      query_embedding:  embeddingRow.embedding,
+      industry_ids:     null,   // alle Branchen
+      match_threshold:  0.75,
+      match_count:      5,
+      offset_count:     0,
+    });
+    // Aktuellen Artikel ausschließen, max. 4 anzeigen
+    similarArticles = (similar ?? [])
+      .filter((a: { id: string }) => a.id !== id)
+      .slice(0, 4)
+      .map((a: {
+        id: string; title: string; summary_medium: string | null;
+        industry_id: number; impact_level: ImpactLevel | null; published_at: string | null;
+      }) => a);
+  }
 
   const isBookmarked = !!bm;
   const { isFullAccess } = getTrialInfo({
@@ -264,6 +292,10 @@ export default async function ArticleDetailPage({ params }: Props) {
         </a>
         <BackButton label="Zurück" variant="button" />
       </div>
+
+      {/* ── Similar articles ─────────────────────────────── */}
+      <SimilarArticles articles={similarArticles} />
+
     </div>
   );
 }
