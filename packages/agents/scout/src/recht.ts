@@ -1,4 +1,4 @@
-import { runScout } from "./runner.js";
+import { runScoutFromDB } from "./runner.js";
 
 /**
  * Recht & Compliance — Scout
@@ -18,41 +18,7 @@ import { runScout } from "./runner.js";
 
 const INDUSTRY_ID = 3; // Recht & Compliance
 
-runScout(INDUSTRY_ID, [
-  // ── Höchstgerichte ──────────────────────────────────────────────────────
-  {
-    name: "BAG — Entscheidungen",
-    url: "https://www.bundesarbeitsgericht.de/feed/entscheidung/neueste",
-    trust_level: "official",
-  },
-  {
-    name: "BAG — Pressemitteilungen",
-    url: "https://www.bundesarbeitsgericht.de/feed/presse/neueste",
-    trust_level: "official",
-  },
-  // ── EU-Gesetzgebung & Institutionen ─────────────────────────────────────
-  {
-    name: "EU-Kommission — Pressemitteilungen",
-    url: "https://ec.europa.eu/commission/presscorner/api/rss",
-    trust_level: "official",
-  },
-  {
-    name: "Europäisches Parlament — Pressemitteilungen DE",
-    url: "https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",
-    trust_level: "official",
-  },
-  // ── Fachmedien ────────────────────────────────────────────────────────────
-  {
-    name: "JUVE Rechtsmarkt",
-    url: "https://www.juve.de/feed/",
-    trust_level: "media",
-  },
-  {
-    name: "Datenschutz-Notizen",
-    url: "https://www.dsn-group.de/datenschutz-notizen/blog.recent.xml",
-    trust_level: "media",
-  },
-], "Recht & Compliance").catch((err) => {
+runScoutFromDB(INDUSTRY_ID, "Recht & Compliance").catch((err) => {
   console.error("[Scout:Recht] Fatal:", err);
   process.exit(1);
 });

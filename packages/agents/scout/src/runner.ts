@@ -173,6 +173,154 @@ async function handleSourceFailure(
   }
 }
 
+/**
+ * DB-basierter Scout: liest Quellen direkt aus Supabase (kein Hardcoding).
+ * Dadurch bleiben auto-ersetzte URLs (source-checker) dauerhaft gültig.
+ */
+export async function runScoutFromDB(industryId: number, label: string) {
+  const DRY_RUN = process.env["DRY_RUN"] === "true";
+  console.log(`[Scout:${label}] Starting (DB-mode)${DRY_RUN ? " (dry run)" : ""}…`);
+
+  const supabase = DRY_RUN ? null : createServiceClient();
+  let totalNew = 0;
+  let totalSkipped = 0;
+
+  if (!DRY_RUN) {
+    const { data: dbSources, error: fetchError } = await supabase!
+      .from("sources")
+      .select("id, name, url, trust_level")
+      .eq("industry_id", industryId)
+      .eq("is_active", true)
+      .neq("health_status", "broken");
+
+    if (fetchError || !dbSources) {
+      console.error(`[Scout:${label}] Failed to load sources from DB: ${fetchError?.message}`);
+      process.exit(1);
+    }
+
+    console.log(`[Scout:${label}] Loaded ${dbSources.length} sources from DB`);
+
+    for (const source of dbSources) {
+      console.log(`\n[Scout:${label}] Fetching: ${source.name} — ${source.url}`);
+      try {
+        const items = await fetchRssFeed(source.url);
+        console.log(`[Scout:${label}]   ${items.length} items in feed`);
+
+        // Erfolg: Health-Counter zurücksetzen
+        await supabase!
+          .from("sources")
+          .update({
+            consecutive_failures: 0,
+            health_status: "healthy",
+            last_health_check: new Date().toISOString(),
+            last_error: null,
+          })
+          .eq("id", source.id);
+
+        for (const item of items) {
+          const normalizedUrl = normalizeUrl(item.url);
+          const { error } = await supabase!.from("articles").insert({
+            source_url:      normalizedUrl,
+            title:           item.title,
+            industry_id:     industryId,
+            source_id:       source.id,
+            published_at:    item.publishedAt?.toISOString() ?? null,
+            language:        "de",
+            tags:            [],
+            rss_description: item.description ?? null,
+          });
+
+          if (!error) {
+            totalNew++;
+            console.log(`[Scout:${label}]   + ${item.title.substring(0, 70)}`);
+          } else if (error.code === "23505") {
+            totalSkipped++;
+          } else {
+            console.error(`[Scout:${label}]   ! Insert failed: ${error.message}`);
+          }
+        }
+
+        await supabase!
+          .from("sources")
+          .update({ last_crawled: new Date().toISOString() })
+          .eq("id", source.id);
+
+      } catch (err) {
+        console.error(`[Scout:${label}]   Error: ${err}`);
+        await handleSourceFailureById(supabase!, source.id, source.name, source.url, label, String(err));
+      }
+    }
+  } else {
+    console.log(`[Scout:${label}] DRY_RUN — skipping DB source load`);
+  }
+
+  console.log(`\n[Scout:${label}] Done. New: ${totalNew}, Already known: ${totalSkipped}`);
+}
+
+/** Fehler verwalten nach ID (kein URL-Lookup nötig, da ID bereits bekannt) */
+async function handleSourceFailureById(
+  supabase: ReturnType<typeof createServiceClient>,
+  sourceId: string,
+  sourceName: string,
+  sourceUrl: string,
+  label: string,
+  errorMsg: string,
+) {
+  const { data: row } = await supabase
+    .from("sources")
+    .select("consecutive_failures, health_status")
+    .eq("id", sourceId)
+    .maybeSingle();
+
+  if (!row) return;
+
+  const failures = (row.consecutive_failures ?? 0) + 1;
+  const now = new Date().toISOString();
+
+  await supabase.from("sources").update({
+    consecutive_failures: failures,
+    last_error: errorMsg.substring(0, 500),
+    last_health_check: now,
+    health_status: failures >= MAX_FAILURES_BEFORE_BROKEN ? "broken" : "degraded",
+  }).eq("id", sourceId);
+
+  console.warn(`[Scout:${label}]   ${sourceName}: ${failures} Fehler in Folge`);
+
+  if (failures === MAX_FAILURES_BEFORE_RECOVERY) {
+    console.log(`[Scout:${label}]   Starte Auto-Recovery für "${sourceName}"…`);
+
+    const newUrl = await discoverNewFeedUrl(
+      sourceName,
+      sourceUrl,
+      (msg) => console.log(`[Scout:${label}]   ${msg}`),
+    );
+
+    if (newUrl) {
+      console.log(`[Scout:${label}]   Neue URL gefunden: ${newUrl}`);
+      await supabase.from("sources").update({
+        url: newUrl,
+        consecutive_failures: 0,
+        health_status: "healthy",
+        last_error: `Auto-Recovery: URL aktualisiert von ${sourceUrl} zu ${newUrl}`,
+        last_health_check: new Date().toISOString(),
+      }).eq("id", sourceId);
+
+      try {
+        const items = await fetchRssFeed(newUrl);
+        console.log(`[Scout:${label}]   Neue URL liefert ${items.length} Items — Lauf erfolgreich`);
+      } catch (e) {
+        console.error(`[Scout:${label}]   Neue URL fehlgeschlagen: ${e}`);
+      }
+    } else {
+      console.warn(`[Scout:${label}]   Auto-Recovery erfolglos — "${sourceName}" auf 'degraded' gesetzt`);
+    }
+  }
+
+  if (failures >= MAX_FAILURES_BEFORE_BROKEN) {
+    console.error(`[Scout:${label}]   "${sourceName}" nach ${failures} Fehlern als 'broken' markiert`);
+  }
+}
+
 async function getOrCreateSource(
   supabase: ReturnType<typeof createServiceClient>,
   industryId: number,

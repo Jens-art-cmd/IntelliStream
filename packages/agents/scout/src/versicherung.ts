@@ -1,4 +1,4 @@
-import { runScout } from "./runner.js";
+import { runScoutFromDB } from "./runner.js";
 
 /**
  * Versicherung & Risiko — Scout
@@ -18,46 +18,7 @@ import { runScout } from "./runner.js";
 
 const INDUSTRY_ID = 14; // Versicherung & Risiko
 
-runScout(INDUSTRY_ID, [
-  // ── Offiziell / Behörden ─────────────────────────────────────────────────
-  {
-    name: "BaFin — Versicherungsaufsicht",
-    url: "https://www.bafin.de/SiteGlobals/Functions/RSSFeed/DE/RSSNewsfeed_Aktuelles.xml",
-    trust_level: "official",
-  },
-  {
-    name: "EIOPA — Pressemitteilungen",
-    url: "https://www.eiopa.europa.eu/rss.xml",
-    trust_level: "official",
-  },
-  // ── Verbände ─────────────────────────────────────────────────────────────
-  {
-    name: "GDV — Gesamtverband der Versicherer",
-    url: "https://www.gdv.de/gdv/presse/pressemitteilungen/rss/",
-    trust_level: "official",
-  },
-  // ── Fachmedien ────────────────────────────────────────────────────────────
-  {
-    name: "Versicherungswirtschaft heute",
-    url: "https://www.vwheute.de/rss/",
-    trust_level: "media",
-  },
-  {
-    name: "Versicherungsjournal",
-    url: "https://www.versicherungsjournal.de/rss/versicherungsjournal.xml",
-    trust_level: "media",
-  },
-  {
-    name: "Pfefferminzia",
-    url: "https://www.pfefferminzia.de/feed/",
-    trust_level: "media",
-  },
-  {
-    name: "Handelsblatt — Versicherungen",
-    url: "https://www.handelsblatt.com/contentexport/feed/versicherungen",
-    trust_level: "media",
-  },
-], "Versicherung & Risiko").catch((err) => {
+runScoutFromDB(INDUSTRY_ID, "Versicherung & Risiko").catch((err) => {
   console.error("[Scout:Versicherung] Fatal:", err);
   process.exit(1);
 });

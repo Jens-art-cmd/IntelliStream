@@ -1,4 +1,4 @@
-import { runScout } from "./runner.js";
+import { runScoutFromDB } from "./runner.js";
 
 /**
  * Pharma & Life Science — Scout
@@ -19,43 +19,7 @@ import { runScout } from "./runner.js";
 
 const INDUSTRY_ID = 5; // Pharma & Life Science
 
-runScout(INDUSTRY_ID, [
-  {
-    name: "EMA — Pressemitteilungen",
-    url: "https://www.ema.europa.eu/en/rss-feeds/ema-news-rss-feed.xml",
-    trust_level: "official",
-  },
-  {
-    name: "BfArM — Meldungen",
-    url: "https://www.bfarm.de/SiteGlobals/Functions/RSSFeed/RSSNewsfeed/RSSNewsfeed.xml",
-    trust_level: "official",
-  },
-  {
-    name: "G-BA — Beschlüsse",
-    url: "https://www.g-ba.de/service/rss/",
-    trust_level: "official",
-  },
-  {
-    name: "IQWiG — Nutzenbewertungen",
-    url: "https://www.iqwig.de/rss/",
-    trust_level: "official",
-  },
-  {
-    name: "Pharmazeutische Zeitung",
-    url: "https://www.pharmazeutische-zeitung.de/feed/",
-    trust_level: "media",
-  },
-  {
-    name: "FiercePharma",
-    url: "https://www.fiercepharma.com/rss/xml",
-    trust_level: "media",
-  },
-  {
-    name: "Ärzteblatt — Arzneimittel",
-    url: "https://www.aerzteblatt.de/rss/nachrichten.xml",
-    trust_level: "media",
-  },
-], "Pharma").catch((err) => {
+runScoutFromDB(INDUSTRY_ID, "Pharma").catch((err) => {
   console.error("[Scout:Pharma] Fatal:", err);
   process.exit(1);
 });

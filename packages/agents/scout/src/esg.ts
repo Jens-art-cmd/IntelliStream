@@ -1,4 +1,4 @@
-import { runScout } from "./runner.js";
+import { runScoutFromDB } from "./runner.js";
 
 /**
  * ESG & Nachhaltigkeit — Scout
@@ -19,35 +19,7 @@ import { runScout } from "./runner.js";
 
 const INDUSTRY_ID = 2; // ESG & Nachhaltigkeit
 
-runScout(INDUSTRY_ID, [
-  // ── Regulatorik EU ───────────────────────────────────────────────────────
-  {
-    name: "ESMA — ESG & Sustainable Finance",
-    url: "https://www.esma.europa.eu/rss.xml",
-    trust_level: "official",
-  },
-  {
-    name: "EU-Kommission — Pressemitteilungen",
-    url: "https://ec.europa.eu/commission/presscorner/api/rss",
-    trust_level: "official",
-  },
-  {
-    name: "Europäisches Parlament — Pressemitteilungen DE",
-    url: "https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",
-    trust_level: "official",
-  },
-  // ── Fachmedien ────────────────────────────────────────────────────────────
-  {
-    name: "ESG Today",
-    url: "https://www.esgtoday.com/feed/",
-    trust_level: "media",
-  },
-  {
-    name: "Responsible Investor",
-    url: "https://www.responsible-investor.com/feed/",
-    trust_level: "media",
-  },
-], "ESG").catch((err) => {
+runScoutFromDB(INDUSTRY_ID, "ESG").catch((err) => {
   console.error("[Scout:ESG] Fatal:", err);
   process.exit(1);
 });

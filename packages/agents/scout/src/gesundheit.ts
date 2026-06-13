@@ -1,4 +1,4 @@
-import { runScout } from "./runner.js";
+import { runScoutFromDB } from "./runner.js";
 
 /**
  * Gesundheit & MedTech — Scout
@@ -20,51 +20,7 @@ import { runScout } from "./runner.js";
 
 const INDUSTRY_ID = 9; // Gesundheit & MedTech
 
-runScout(INDUSTRY_ID, [
-  // ── Offiziell / Behörden ─────────────────────────────────────────────────
-  {
-    name: "G-BA — Beschlüsse & Meldungen",
-    url: "https://www.g-ba.de/service/rss/",
-    trust_level: "official",
-  },
-  {
-    name: "BMG — Pressemitteilungen",
-    url: "https://www.bundesgesundheitsministerium.de/service/rss-feed.html",
-    trust_level: "official",
-  },
-  {
-    name: "BfArM — Medizinprodukte & Arzneimittel",
-    url: "https://www.bfarm.de/SiteGlobals/Functions/RSSFeed/RSSNewsfeed/RSSNewsfeed.xml",
-    trust_level: "official",
-  },
-  {
-    name: "RKI — Pressemitteilungen",
-    url: "https://www.rki.de/SiteGlobals/Functions/RSSFeed/RSSNewsfeed/RSSNewsfeed.xml",
-    trust_level: "official",
-  },
-  // ── Verbände ─────────────────────────────────────────────────────────────
-  {
-    name: "GKV-Spitzenverband",
-    url: "https://www.gkv-spitzenverband.de/presse/presse_rss/presse_rss.rss",
-    trust_level: "official",
-  },
-  {
-    name: "BVMed — Medizinprodukte-Verband",
-    url: "https://www.bvmed.de/rss/presse.rss",
-    trust_level: "official",
-  },
-  // ── Fachmedien ────────────────────────────────────────────────────────────
-  {
-    name: "Ärzteblatt — Gesundheitspolitik",
-    url: "https://www.aerzteblatt.de/rss/nachrichten.xml",
-    trust_level: "media",
-  },
-  {
-    name: "KMA Online",
-    url: "https://www.kma-online.de/rss/",
-    trust_level: "media",
-  },
-], "Gesundheit").catch((err) => {
+runScoutFromDB(INDUSTRY_ID, "Gesundheit").catch((err) => {
   console.error("[Scout:Gesundheit] Fatal:", err);
   process.exit(1);
 });

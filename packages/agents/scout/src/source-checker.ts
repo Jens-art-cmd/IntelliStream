@@ -15,6 +15,7 @@ try { require("dotenv").config(); } catch { /* dotenv optional */ }
 
 import Anthropic from "@anthropic-ai/sdk";
 import { createServiceClient } from "../../../shared/src/db/client.js";
+import { discoverNewFeedUrl } from "./recovery.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -98,9 +99,18 @@ async function findReplacement(
   source: SourceRow,
   industryLabel: string,
 ): Promise<string | null> {
+  // Step 1: Try deterministic discovery first (free, no API call needed)
+  const discoveredUrl = await discoverNewFeedUrl(
+    source.name,
+    source.url,
+    (msg) => console.log(`[HealthChecker]   ${msg}`),
+  );
+  if (discoveredUrl) return discoveredUrl;
+
+  // Step 2: Fall back to Claude if deterministic discovery found nothing
   const apiKey = process.env["ANTHROPIC_API_KEY"];
   if (!apiKey) {
-    console.warn(`[HealthChecker] ANTHROPIC_API_KEY not set — skipping replacement search for ${source.name}`);
+    console.warn(`[HealthChecker] ANTHROPIC_API_KEY not set — skipping Claude replacement search for ${source.name}`);
     return null;
   }
 
@@ -159,11 +169,21 @@ async function findReplacement(
 // ---------------------------------------------------------------------------
 
 const INDUSTRY_LABELS: Record<number, string> = {
-  1: "Energie & Erneuerbare",
-  3: "Recht & Compliance",
-  4: "IT & Cybersecurity",
-  6: "Finanzen & Kapitalmarkt",
-  8: "Automotive & Mobilität",
+  1:  "Energie & Erneuerbare",
+  2:  "ESG & Nachhaltigkeit",
+  3:  "Recht & Compliance",
+  4:  "IT & Cybersecurity",
+  5:  "Pharma & Life Science",
+  6:  "Finanzen & Kapitalmarkt",
+  7:  "Bau & Immobilien",
+  8:  "Automotive & Mobilität",
+  9:  "Gesundheit & MedTech",
+  10: "Maschinenbau & Industrie 4.0",
+  11: "HR & Arbeitsmarkt",
+  13: "Logistik & Transport",
+  14: "Versicherung & Risiko",
+  15: "Chemie & Materialien",
+  21: "EU-Regulatorik & Gesetzgebung",
 };
 
 // ---------------------------------------------------------------------------
@@ -294,6 +314,54 @@ async function main(): Promise<void> {
         if (r.replaced) console.log(`           → New URL: ${r.url}`);
       }
     }
+  }
+
+  // ── Admin-E-Mail bei dauerhaft kaputten Quellen (via Resend) ─────────────
+  const brokenUnreplaced = results.filter((r) => r.status === "broken" && !r.replaced);
+  const resendKey = process.env["RESEND_API_KEY"];
+
+  if (brokenUnreplaced.length > 0 && resendKey) {
+    const brokenList = brokenUnreplaced
+      .map((r) => `<li><strong>${r.name}</strong><br>URL: ${r.url}<br>Fehler: ${r.error ?? "unbekannt"}</li>`)
+      .join("\n");
+
+    const html = `
+<h2>IntelliStream — Source Health Alert</h2>
+<p>${brokenUnreplaced.length} RSS-Quellen sind dauerhaft kaputt und konnten nicht automatisch ersetzt werden:</p>
+<ul>
+${brokenList}
+</ul>
+<p>Bitte manuell prüfen und ggf. neue URLs in der Supabase-Datenbank eintragen.</p>
+<hr>
+<small>Generiert von HealthChecker am ${new Date().toISOString()}</small>
+`.trim();
+
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${resendKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "IntelliStream Alerts <alerts@distillfeed.eu>",
+          to: ["koerbe-wellig4m@icloud.com"],
+          subject: `[IntelliStream] ${brokenUnreplaced.length} RSS-Quellen kaputt — manuelle Prüfung nötig`,
+          html,
+        }),
+      });
+
+      if (res.ok) {
+        console.log(`\n[HealthChecker] Admin-Alert-E-Mail gesendet (${brokenUnreplaced.length} broken sources)`);
+      } else {
+        const body = await res.text();
+        console.warn(`[HealthChecker] Resend API Fehler ${res.status}: ${body}`);
+      }
+    } catch (err) {
+      console.warn(`[HealthChecker] Konnte Admin-Alert nicht senden: ${(err as Error).message}`);
+    }
+  } else if (brokenUnreplaced.length > 0 && !resendKey) {
+    console.warn(`[HealthChecker] RESEND_API_KEY nicht gesetzt — kein Admin-Alert gesendet (${brokenUnreplaced.length} broken sources)`);
   }
 }
 

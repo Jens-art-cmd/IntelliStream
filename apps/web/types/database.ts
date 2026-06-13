@@ -26,8 +26,10 @@ type SourceRow = {
   type: SourceTypeDb; trust_level: TrustLevelDb; is_active: boolean;
   last_crawled: string | null; articles_per_day_avg: number | null;
   config: Json; created_at: string;
-  consecutive_failures: number;  // migration 012
+  consecutive_failures: number;   // migration 012
   last_health_check: string | null; // migration 012
+  health_status: string;            // migration 012: 'healthy' | 'degraded' | 'broken' | 'unknown'
+  last_error: string | null;        // migration 012
 };
 type SourceInsert = Omit<SourceRow, "id" | "created_at"> & { id?: string; created_at?: string };
 

@@ -2,7 +2,7 @@ name: Source Health Checker
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # Daily at 06:00 UTC
+    - cron: '0 */4 * * *'   # Every 4 hours
   workflow_dispatch:        # Manually triggerable in the GitHub UI
 
 jobs:
