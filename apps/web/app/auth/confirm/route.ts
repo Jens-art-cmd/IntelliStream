@@ -28,12 +28,22 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { data: otpData, error } = await supabase.auth.verifyOtp({
       type: type as "signup",
       token_hash,
     });
 
     if (!error) {
+      // Onboarding-Mail async senden (kein await — blockiert Redirect nicht)
+      if (type === "signup" && otpData?.user?.id) {
+        const appUrl    = process.env["APP_URL"] ?? "https://distillfeed.eu";
+        const secret    = process.env["INTERNAL_WEBHOOK_SECRET"] ?? "";
+        fetch(`${appUrl}/api/onboarding/welcome`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json", "x-webhook-secret": secret },
+          body:    JSON.stringify({ user_id: otpData.user.id }),
+        }).catch(() => {}); // Fehler still ignorieren — Redirect nicht blockieren
+      }
       return successResponse;
     }
   }
