@@ -19,57 +19,37 @@ import { runScout } from "./runner.js";
 const INDUSTRY_ID = 3; // Recht & Compliance
 
 runScout(INDUSTRY_ID, [
-  // ── Höchstgerichte (Primärquellen) ──────────────────────────────────────
-  {
-    name: "BGH — Entscheidungen",
-    url: "https://www.bundesgerichtshof.de/cgi-bin/rechtsprechung/list.cgi?Gericht=bgh&Art=en&Datum=Aktuell&format=rss",
-    trust_level: "official",
-  },
+  // ── Höchstgerichte ──────────────────────────────────────────────────────
   {
     name: "BAG — Entscheidungen",
-    url: "https://www.bundesarbeitsgericht.de/entscheidungen/entscheidungen-rss/",
+    url: "https://www.bundesarbeitsgericht.de/feed/entscheidung/neueste",
     trust_level: "official",
   },
   {
-    name: "BFH — Entscheidungen",
-    url: "https://www.bundesfinanzhof.de/rss/entscheidungen/",
+    name: "BAG — Pressemitteilungen",
+    url: "https://www.bundesarbeitsgericht.de/feed/presse/neueste",
+    trust_level: "official",
+  },
+  // ── EU-Gesetzgebung & Institutionen ─────────────────────────────────────
+  {
+    name: "EU-Kommission — Pressemitteilungen",
+    url: "https://ec.europa.eu/commission/presscorner/api/rss",
     trust_level: "official",
   },
   {
-    name: "EuGH — Urteile & Schlussanträge",
-    url: "https://curia.europa.eu/jcms/upload/docs/application/rss/2011-06/juris.rss",
-    trust_level: "official",
-  },
-  // ── EU-Gesetzgebung & nationale Verfahren ────────────────────────────────
-  {
-    name: "EUR-Lex — Neue Rechtsakte",
-    url: "https://eur-lex.europa.eu/rss/news.xml",
-    trust_level: "official",
-  },
-  {
-    name: "Bundesrat — Aktuelles",
-    url: "https://www.bundesrat.de/DE/service/rss/aktuelles/aktuelles_node.xml",
+    name: "Europäisches Parlament — Pressemitteilungen DE",
+    url: "https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",
     trust_level: "official",
   },
   // ── Fachmedien ────────────────────────────────────────────────────────────
   {
-    name: "Beck-aktuell",
-    url: "https://rsw.beck.de/rss/rss.aspx?feed=NJW",
-    trust_level: "media",
-  },
-  {
-    name: "LTO — Legal Tribune Online",
-    url: "https://www.lto.de/feed/",
-    trust_level: "media",
-  },
-  {
-    name: "Compliance-Magazin",
-    url: "https://www.compliance-magazin.de/feed/",
-    trust_level: "media",
-  },
-  {
     name: "JUVE Rechtsmarkt",
-    url: "https://www.juve.de/feed",
+    url: "https://www.juve.de/feed/",
+    trust_level: "media",
+  },
+  {
+    name: "Datenschutz-Notizen",
+    url: "https://www.dsn-group.de/datenschutz-notizen/blog.recent.xml",
     trust_level: "media",
   },
 ], "Recht & Compliance").catch((err) => {

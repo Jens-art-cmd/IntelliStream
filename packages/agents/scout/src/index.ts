@@ -21,30 +21,19 @@ const INDUSTRY_ID = 1; // Energie & Erneuerbare
 runScout(INDUSTRY_ID, [
   // ── Offiziell / Regulatorik ──────────────────────────────────────────────
   {
-    name: "BNetzA — Pressemitteilungen",
-    url: "https://www.bundesnetzagentur.de/SiteGlobals/Functions/RSSFeed/DE/Presse/RSSNewsfeed_Presse.xml",
+    name: "BNetzA — Aktuelles",
+    url: "https://www.bundesnetzagentur.de/SiteGlobals/Functions/RSSFeed/DE/RSSNewsfeed/RSSNewsfeed_Aktuelles_neu.xml",
     trust_level: "official",
   },
   {
-    name: "BMWK — Pressemitteilungen",
-    url: "https://www.bmwk.de/SiteGlobals/Functions/RSSFeed/DE/Presse/RSSNewsfeed_Presse.xml",
+    name: "EU-Kommission — Pressemitteilungen",
+    url: "https://ec.europa.eu/commission/presscorner/api/rss",
     trust_level: "official",
   },
   {
-    name: "BWE — Pressemitteilungen",
-    url: "https://www.wind-energie.de/presse/pressemitteilungen/rss/",
+    name: "Europäisches Parlament — Pressemitteilungen DE",
+    url: "https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",
     trust_level: "official",
-  },
-  {
-    name: "EPEX SPOT — Pressemitteilungen",
-    url: "https://www.epexspot.com/en/news/rss",
-    trust_level: "official",
-  },
-  // ── Think-Tanks & Analysen ───────────────────────────────────────────────
-  {
-    name: "Agora Energiewende",
-    url: "https://www.agora-energiewende.de/rss.xml",
-    trust_level: "media",
   },
   // ── Fachmedien ────────────────────────────────────────────────────────────
   {

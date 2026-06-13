@@ -27,23 +27,13 @@ runScout(INDUSTRY_ID, [
     trust_level: "official",
   },
   {
-    name: "EFRAG — Nachhaltigkeitsberichterstattung",
-    url: "https://www.efrag.org/News/rss",
+    name: "EU-Kommission — Pressemitteilungen",
+    url: "https://ec.europa.eu/commission/presscorner/api/rss",
     trust_level: "official",
   },
   {
-    name: "EU-Kommission — Sustainable Finance",
-    url: "https://ec.europa.eu/newsroom/just/rss-news-items.cfm?newsletter_service_id=281",
-    trust_level: "official",
-  },
-  {
-    name: "EUR-Lex — ESG-Regulatorik",
-    url: "https://eur-lex.europa.eu/rss/rss.xml",
-    trust_level: "official",
-  },
-  {
-    name: "Umweltbundesamt — Pressemitteilungen",
-    url: "https://www.umweltbundesamt.de/service/presse/pressemitteilungen/rss.xml",
+    name: "Europäisches Parlament — Pressemitteilungen DE",
+    url: "https://www.europarl.europa.eu/rss/doc/press-releases/de.xml",
     trust_level: "official",
   },
   // ── Fachmedien ────────────────────────────────────────────────────────────
@@ -55,11 +45,6 @@ runScout(INDUSTRY_ID, [
   {
     name: "Responsible Investor",
     url: "https://www.responsible-investor.com/feed/",
-    trust_level: "media",
-  },
-  {
-    name: "Handelsblatt — Nachhaltigkeit",
-    url: "https://www.handelsblatt.com/contentexport/feed/nachhaltigkeit",
     trust_level: "media",
   },
 ], "ESG").catch((err) => {
