@@ -17,10 +17,10 @@ interface ResendEvent {
     | "email.sent"
     | "email.delivered"
     | "email.delivery_delayed"
-    | "email.opened"
     | "email.clicked"
     | "email.bounced"
-    | "email.complained";
+    | "email.complained"
+    | string;
   data: {
     email_id: string;
     [key: string]: unknown;
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   console.log(`[Webhook] Event: ${type} — email_id: ${emailId}`);
 
   // 3. Nur relevante Events verarbeiten
-  const handled = ["email.opened", "email.clicked", "email.bounced", "email.complained"];
+  const handled = ["email.clicked", "email.bounced", "email.complained"];
   if (!handled.includes(type)) {
     return NextResponse.json({ received: true, skipped: true });
   }
@@ -72,15 +72,6 @@ export async function POST(request: NextRequest) {
 
   // 5. Event-Handling
   switch (type) {
-    case "email.opened": {
-      await admin
-        .from("newsletters")
-        .update({ opened_at: new Date().toISOString(), open_rate: 1.0 })
-        .eq("resend_email_id", emailId)
-        .is("opened_at", null); // nur erstes Öffnen zählen
-      break;
-    }
-
     case "email.clicked": {
       await admin
         .from("newsletters")
