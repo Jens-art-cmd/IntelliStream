@@ -107,22 +107,30 @@ async function run() {
 
   const since = lookbackDate(FREQUENCY);
 
-  const { data: allArticles, error: artErr } = await supabase
+  const IMPACT_RANK: Record<string, number> = { high: 0, medium: 1, low: 2 };
+
+  const { data: rawArticles, error: artErr } = await supabase
     .from("articles")
-    .select("id, title, summary_short, impact_level, impact_score, source_url, published_at, industry_id")
+    .select("id, title, summary_short, impact_level, source_url, published_at, industry_id")
     .in("industry_id", allIndustryIds)
     .gte("published_at", since)
     .not("processed_at", "is", null)
-    .order("impact_score", { ascending: false })
     .order("published_at", { ascending: false })
     .limit(500);
+
+  // Sortiere nach impact_level (high > medium > low), dann published_at
+  const allArticles = (rawArticles ?? []).sort((a, b) => {
+    const rankA = IMPACT_RANK[a.impact_level ?? "low"] ?? 2;
+    const rankB = IMPACT_RANK[b.impact_level ?? "low"] ?? 2;
+    return rankA - rankB;
+  });
 
   if (artErr) {
     console.error("[Delivery] Artikel-Abfrage fehlgeschlagen:", artErr.message);
     process.exit(1);
   }
 
-  console.log(`[Delivery] ${allArticles?.length ?? 0} Artikel seit ${since} verfügbar.`);
+  console.log(`[Delivery] ${allArticles.length} Artikel seit ${since} verfügbar.`);
 
   // 4. Pro User: Artikel filtern, Mail bauen, versenden
   let sent = 0;
