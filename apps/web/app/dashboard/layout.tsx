@@ -32,7 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const { data: userData } = await supabase
     .from("users")
-    .select("plan, trial_ends_at")
+    .select("plan, trial_ends_at, is_admin")
     .eq("id", session.user.id)
     .single();
 
@@ -83,7 +83,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
 
         {/* Navigation */}
-        <SidebarNav />
+        <SidebarNav isAdmin={userData?.is_admin ?? false} />
 
         {/* User footer */}
         <div className="px-4 pb-5 pt-3 mt-auto" style={{ borderTop: `1px solid ${C.line}` }}>

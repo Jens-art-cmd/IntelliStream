@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutGrid, Search, Bell, Bookmark, User } from "lucide-react";
+import { LayoutGrid, Search, Bell, Bookmark, User, ShieldCheck } from "lucide-react";
 
 const C = {
   ink: "#1A1813", inkSoft: "#57534A", inkFaint: "#8C887E",
@@ -68,17 +68,24 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function SidebarNav() {
+export default function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
   return (
     <nav className="flex-1 px-0 py-4 overflow-y-auto" aria-label="Hauptnavigation">
       <SectionLabel>Hauptmenü</SectionLabel>
-      <NavLink href="/dashboard/feed"      label="Mein Feed">     <LayoutGrid size={17} strokeWidth={1.75} /></NavLink>
-      <NavLink href="/dashboard/search"    label="Suche">         <Search     size={17} strokeWidth={1.75} /></NavLink>
-      <NavLink href="/dashboard/alerts"    label="Alerts">        <Bell       size={17} strokeWidth={1.75} /></NavLink>
-      <NavLink href="/dashboard/bookmarks" label="Lesezeichen">   <Bookmark   size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/feed"      label="Mein Feed">     <LayoutGrid  size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/search"    label="Suche">         <Search      size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/alerts"    label="Alerts">        <Bell        size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/bookmarks" label="Lesezeichen">   <Bookmark    size={17} strokeWidth={1.75} /></NavLink>
 
       <SectionLabel>Konto</SectionLabel>
-      <NavLink href="/dashboard/settings"  label="Einstellungen"> <User       size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/settings"  label="Einstellungen"> <User        size={17} strokeWidth={1.75} /></NavLink>
+
+      {isAdmin && (
+        <>
+          <SectionLabel>Admin</SectionLabel>
+          <NavLink href="/admin" label="Admin-Panel">             <ShieldCheck size={17} strokeWidth={1.75} /></NavLink>
+        </>
+      )}
     </nav>
   );
 }
