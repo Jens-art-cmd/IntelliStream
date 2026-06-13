@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { createClient } from "@supabase/supabase-js";
 
-const ALLOWED_FIELDS = ["newsletter_frequency"] as const;
+const ALLOWED_FIELDS = ["newsletter_frequency", "newsletter_time"] as const;
 type AllowedField = typeof ALLOWED_FIELDS[number];
 
 /**
@@ -36,6 +36,14 @@ export async function PATCH(request: NextRequest) {
     const valid = ["daily", "weekly", "realtime"];
     if (!valid.includes(update.newsletter_frequency as string)) {
       return NextResponse.json({ error: "Ungültige Frequenz" }, { status: 400 });
+    }
+  }
+
+  // Validate newsletter_time (HH:MM format, allowed hours 06–20)
+  if (update.newsletter_time !== undefined) {
+    const valid = ["06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "16:00", "18:00", "20:00"];
+    if (!valid.includes(update.newsletter_time as string)) {
+      return NextResponse.json({ error: "Ungültige Uhrzeit" }, { status: 400 });
     }
   }
 
