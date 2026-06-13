@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const PROTECTED_PATHS = ["/dashboard", "/onboarding", "/settings"];
+const ADMIN_PATHS     = ["/admin"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -34,6 +35,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Admin-Schutz: eingeloggt sein reicht nicht — is_admin muss true sein
+  const isAdmin = ADMIN_PATHS.some((p) => pathname.startsWith(p));
+  if (isAdmin) {
+    if (!session) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    // is_admin via Supabase prüfen
+    const { data: adminCheck } = await supabase
+      .from("users")
+      .select("is_admin")
+      .eq("id", session.user.id)
+      .single();
+    if (!adminCheck?.is_admin) {
+      return NextResponse.redirect(new URL("/dashboard/feed", request.url));
+    }
+  }
+
   if (session && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/dashboard/feed", request.url));
   }
@@ -43,4 +63,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+  // Hinweis: /admin ist durch das obige Muster bereits erfasst
 };

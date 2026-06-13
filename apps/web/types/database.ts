@@ -26,6 +26,8 @@ type SourceRow = {
   type: SourceTypeDb; trust_level: TrustLevelDb; is_active: boolean;
   last_crawled: string | null; articles_per_day_avg: number | null;
   config: Json; created_at: string;
+  consecutive_failures: number;  // migration 012
+  last_health_check: string | null; // migration 012
 };
 type SourceInsert = Omit<SourceRow, "id" | "created_at"> & { id?: string; created_at?: string };
 
@@ -58,6 +60,11 @@ type UserRow = {
   stripe_subscription_id: string | null; newsletter_opt_in: boolean;
   newsletter_opt_in_at: string | null; deletion_requested_at: string | null;
   trial_started_at: string | null; trial_ends_at: string | null; // migration 018
+  trial_reminder_7d_sent_at: string | null;  // migration 021
+  trial_reminder_1d_sent_at: string | null;  // migration 021
+  trial_expired_sent_at: string | null;      // migration 021
+  onboarding_email_sent_at: string | null;   // migration 022
+  is_admin: boolean;                          // migration 023
   created_at: string; updated_at: string;
 };
 type UserInsert = {
@@ -67,6 +74,9 @@ type UserInsert = {
   stripe_subscription_id?: string | null; newsletter_opt_in?: boolean;
   newsletter_opt_in_at?: string | null; deletion_requested_at?: string | null;
   trial_started_at?: string | null; trial_ends_at?: string | null;
+  trial_reminder_7d_sent_at?: string | null; trial_reminder_1d_sent_at?: string | null;
+  trial_expired_sent_at?: string | null; onboarding_email_sent_at?: string | null;
+  is_admin?: boolean;
   created_at?: string; updated_at?: string;
 };
 type UserUpdate = Partial<Omit<UserRow, "id" | "created_at">>;
@@ -98,6 +108,9 @@ type NewsletterRow = {
   id: string; user_id: string; sent_at: string; article_ids: string[];
   subject_line: string; html_content: string; variant: string | null;
   open_rate: number | null; click_rate: number | null; bounced: boolean;
+  resend_email_id: string | null; // migration 020
+  opened_at: string | null;       // migration 020
+  clicked_at: string | null;      // migration 020
 };
 type NewsletterInsert = Omit<NewsletterRow, "id" | "sent_at"> & { id?: string; sent_at?: string };
 
