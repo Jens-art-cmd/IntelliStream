@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Signal, Settings2 } from "lucide-react";
+import { Signal, Settings2, Sparkles } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import FeedClient from "@/components/feed/FeedClient";
 import { getTrialInfo } from "@/lib/trial";
@@ -8,6 +8,7 @@ import { getTrialInfo } from "@/lib/trial";
 export const metadata: Metadata = { title: "Mein Feed · DistillFeed" };
 
 const ARTICLES_PER_INDUSTRY = 30;
+const PERSONALIZED_LIMIT = 60;
 
 export default async function FeedPage() {
   const supabase = await createSupabaseServerClient();
@@ -70,31 +71,90 @@ export default async function FeedPage() {
     );
   }
 
-  const [industriesResult, bookmarksResult, ...articleResults] = await Promise.all([
+  // Prüfen ob User ein Interest-Profil hat (für personalisierten Feed)
+  const { data: userProfile } = await supabase
+    .from("user_profiles")
+    .select("interest_vector")
+    .eq("user_id", user.id)
+    .single();
+
+  const isPersonalized = !!(userProfile?.interest_vector);
+
+  const [industriesResult, bookmarksResult] = await Promise.all([
     supabase.from("industries").select("id, name").in("id", effectiveIndustryIds),
     supabase.from("bookmarks").select("article_id").eq("user_id", user.id),
-    ...effectiveIndustryIds.map((id) =>
-      supabase
-        .from("articles")
-        .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
-        .eq("industry_id", id)
-        .not("summary_medium", "is", null)
-        .eq("is_suppressed", false)
-        .order("published_at", { ascending: false })
-        .limit(ARTICLES_PER_INDUSTRY),
-    ),
   ]);
 
   const industries = industriesResult.data ?? [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bookmarkedIds = new Set<string>((bookmarksResult.data ?? []).map((b: any) => b.article_id as string));
-  const articles = articleResults
-    .flatMap((r) => r.data ?? [])
-    .sort((a, b) => {
-      const ta = a.published_at ? new Date(a.published_at).getTime() : 0;
-      const tb = b.published_at ? new Date(b.published_at).getTime() : 0;
-      return tb - ta;
+
+  let articles: {
+    id: string;
+    title: string;
+    summary_short: string | null;
+    summary_medium: string | null;
+    industry_id: number;
+    tags: string[];
+    relevance_score: number | null;
+    impact_level: string | null;
+    published_at: string | null;
+    is_breaking: boolean;
+    source_url: string;
+  }[] = [];
+
+  if (isPersonalized) {
+    // Personalisierter Feed via RPC (Cosinus-Ähnlichkeit + Recency)
+    const { data: rpcArticles } = await supabase.rpc("get_personalized_feed", {
+      p_user_id:      user.id,
+      p_industry_ids: effectiveIndustryIds,
+      p_limit:        PERSONALIZED_LIMIT,
+      p_days_back:    14,
     });
+
+    if (rpcArticles?.length) {
+      // source_url ist nicht im RPC — separater Lookup
+      const ids = rpcArticles.map((a: { id: string }) => a.id);
+      const { data: urlRows } = await supabase
+        .from("articles")
+        .select("id, source_url")
+        .in("id", ids);
+      const urlMap = new Map((urlRows ?? []).map((r: { id: string; source_url: string }) => [r.id, r.source_url]));
+
+      articles = rpcArticles.map((a: {
+        id: string; title: string; summary_short: string | null;
+        summary_medium: string | null; industry_id: number; tags: string[];
+        relevance_score: number | null; impact_level: string | null;
+        published_at: string | null; is_breaking: boolean;
+      }) => ({
+        ...a,
+        source_url: urlMap.get(a.id) ?? "",
+      }));
+    }
+  }
+
+  // Fallback: Standard-Feed (chronologisch) wenn kein Profil oder RPC leer
+  if (!articles.length) {
+    const articleResults = await Promise.all(
+      effectiveIndustryIds.map((id) =>
+        supabase
+          .from("articles")
+          .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
+          .eq("industry_id", id)
+          .not("summary_medium", "is", null)
+          .eq("is_suppressed", false)
+          .order("published_at", { ascending: false })
+          .limit(ARTICLES_PER_INDUSTRY),
+      ),
+    );
+    articles = articleResults
+      .flatMap((r) => r.data ?? [])
+      .sort((a, b) => {
+        const ta = a.published_at ? new Date(a.published_at).getTime() : 0;
+        const tb = b.published_at ? new Date(b.published_at).getTime() : 0;
+        return tb - ta;
+      });
+  }
 
   const industryNames = industries.map((i) => i.name);
 
@@ -113,12 +173,23 @@ export default async function FeedPage() {
               Feed
             </span>
           </div>
-          <h1
-            className="text-[22px] font-light leading-tight"
-            style={{ fontFamily: "var(--font-display), Georgia, serif", color: "#1A1813", letterSpacing: "-0.015em" }}
-          >
-            Mein Feed
-          </h1>
+          <div className="flex items-center gap-2.5">
+            <h1
+              className="text-[22px] font-light leading-tight"
+              style={{ fontFamily: "var(--font-display), Georgia, serif", color: "#1A1813", letterSpacing: "-0.015em" }}
+            >
+              Mein Feed
+            </h1>
+            {isPersonalized && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+                style={{ background: "#FFF6E0", color: "#E08900", border: "1px solid #FFD966", letterSpacing: "0.08em" }}
+              >
+                <Sparkles size={9} strokeWidth={2.5} />
+                Personalisiert
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             {industryNames.map((name) => (
               <span
