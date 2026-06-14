@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowUpRight, Zap, Lock } from "lucide-react";
+import { ArrowUpRight, Zap, Lock, Clock, Users, AlertTriangle } from "lucide-react";
 import type { ImpactLevel } from "@/types/database";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getTrialInfo } from "@/lib/trial";
@@ -112,6 +112,24 @@ export default async function ArticleDetailPage({ params }: Props) {
             {impact.label}
           </span>
         )}
+        {article.deadline_hint && (
+          <span
+            className="inline-flex items-center gap-1.5 text-2xs font-semibold px-3 py-0.5 rounded-full"
+            style={{ background: "#FEF0EE", color: "#C0392B", border: "1px solid #F5C6C1" }}
+          >
+            <Clock size={10} strokeWidth={2.5} />
+            {article.deadline_hint}
+          </span>
+        )}
+        {article.affected_roles && (
+          <span
+            className="inline-flex items-center gap-1.5 text-2xs font-medium px-3 py-0.5 rounded-full"
+            style={{ background: "#F1EDE4", color: "#57534A", border: "1px solid #E2DDD2" }}
+          >
+            <Users size={10} strokeWidth={2} />
+            {article.affected_roles}
+          </span>
+        )}
       </div>
 
       {/* ── Title ────────────────────────────────────────── */}
@@ -156,26 +174,54 @@ export default async function ArticleDetailPage({ params }: Props) {
         )}
       </div>
 
-      {/* ── Impact reason banner ─────────────────────────── */}
-      {article.impact_reason && (
-        <div className="fl-amber-box flex gap-3 items-start px-4 py-4 mb-6">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "#FFB300" }}
-          >
-            <Zap size={15} strokeWidth={2} color="#1A1100" fill="#1A1100" />
-          </div>
-          <div>
-            <div
-              className="text-2xs font-bold uppercase mb-1"
-              style={{ letterSpacing: "0.08em", color: "#E08900" }}
-            >
-              Handlungsbedarf
+      {/* ── Handlungsbox: action_required (konkret) + impact_reason (Kontext) ── */}
+      {(article.action_required || article.impact_reason) && (
+        <div className="rounded-xl overflow-hidden mb-6" style={{ border: "1px solid #FFD966" }}>
+          {/* Konkrete Handlung */}
+          {article.action_required && article.action_required !== "Zur Kenntnis nehmen." && (
+            <div className="flex gap-3 items-start px-4 py-4" style={{ background: "#FFF6E0" }}>
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "#FFB300" }}
+              >
+                <AlertTriangle size={14} strokeWidth={2.5} color="#1A1100" />
+              </div>
+              <div>
+                <div className="text-2xs font-bold uppercase mb-1" style={{ letterSpacing: "0.08em", color: "#E08900" }}>
+                  Was jetzt zu tun ist
+                </div>
+                <p className="text-sm font-medium leading-relaxed" style={{ color: "#1A1813" }}>
+                  {article.action_required}
+                </p>
+              </div>
             </div>
-            <p className="text-sm leading-relaxed" style={{ color: "#57534A" }}>
-              {article.impact_reason}
-            </p>
-          </div>
+          )}
+          {/* Warum dieser Impact-Level */}
+          {article.impact_reason && (
+            <div
+              className="flex gap-3 items-start px-4 py-3"
+              style={{
+                background: "#FFFBF0",
+                borderTop: article.action_required && article.action_required !== "Zur Kenntnis nehmen."
+                  ? "1px solid #FFD966" : undefined,
+              }}
+            >
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "#F1EDE4" }}
+              >
+                <Zap size={14} strokeWidth={2} color="#E08900" />
+              </div>
+              <div>
+                <div className="text-2xs font-bold uppercase mb-1" style={{ letterSpacing: "0.08em", color: "#8C887E" }}>
+                  Einschätzung
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: "#57534A" }}>
+                  {article.impact_reason}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

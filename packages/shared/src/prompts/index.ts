@@ -16,10 +16,26 @@ Regeln Zusammenfassung:
 - Fachbegriffe beibehalten (EEG, DSGVO, MDR etc.)
 - Kein generisches Füllwort ("In diesem Artikel...", "Es ist wichtig...")
 - Deutsch, professioneller Ton
+- Fokus auf konkreten Handlungsbedarf: Was muss der Leser wissen, entscheiden oder tun?
 
 Regeln Scoring:
 - Bewerte streng aus Sicht eines Entscheiders / Compliance-Verantwortlichen der jeweiligen Branche
-- Relevanz-Score 0–100: 90–100 = unmittelbar handlungsrelevant · 70–89 = wichtig · 50–69 = interessant · 30–49 = Hintergrund · 0–29 = kaum relevant`;
+- Relevanz-Score 0–100: 90–100 = unmittelbar handlungsrelevant · 70–89 = wichtig · 50–69 = interessant · 30–49 = Hintergrund · 0–29 = kaum relevant
+
+Regeln action_required:
+- Konkret formulieren: nicht "Unternehmen sollten prüfen" sondern "Prüfen Sie bis [Datum] ob Ihre [spez. Verträge/Systeme/Prozesse] betroffen sind"
+- Wenn kein Handlungsbedarf: "Keine sofortige Aktion erforderlich — zur Kenntnis nehmen."
+- Max. 200 Zeichen, auf Deutsch
+
+Regeln affected_roles:
+- Kommagetrennte Liste der Rollen die diesen Artikel lesen MÜSSEN (nicht wollen)
+- Beispiele: "Compliance-Beauftragter, Datenschutzbeauftragter", "IT-Sicherheitsleiter, CISO", "Energiemanager, CFO"
+- Max. 3 Rollen, nur wirklich Betroffene
+
+Regeln deadline_hint:
+- Nur setzen wenn ein konkretes Datum / eine Frist im Artikel genannt wird
+- Format: "Frist: TT.MM.JJJJ" oder "In Kraft ab: TT.MM.JJJJ" oder "Konsultation bis: TT.MM.JJJJ"
+- Wenn keine Frist: null`;
 
 export const COMBINED_USER_PROMPT = (
   title: string,
@@ -41,14 +57,17 @@ ${JSON.stringify(tagsTaxonomy, null, 2)}
 
 Antworte NUR mit diesem JSON-Format (kein Markdown):
 {
-  "summary_short":  "Ein präziser Satz (max. 120 Zeichen) für Push-Benachrichtigungen",
-  "summary_medium": "Drei Sätze (max. 400 Zeichen) — Was, Warum relevant, Was tun",
-  "summary_long":   "Vollständige Zusammenfassung (max. 800 Zeichen) mit Kontext, Auswirkungen und Handlungsempfehlung",
-  "relevance_score": <Zahl 0–100>,
-  "impact_level":   "<high|medium|low>",
-  "impact_reason":  "<Ein Satz warum dieser Impact-Level, max. 150 Zeichen>",
-  "tags":           ["<tag1>", "<tag2>", "<tag3>"],
-  "is_breaking":    <true|false>
+  "summary_short":    "Ein präziser Satz (max. 120 Zeichen) — das Wichtigste auf den Punkt",
+  "summary_medium":   "Zwei bis drei Sätze (max. 400 Zeichen) — Was ist passiert, warum ist es relevant, was folgt daraus",
+  "summary_long":     "Vollständige Zusammenfassung (max. 800 Zeichen) mit Kontext, konkreten Auswirkungen und Handlungsempfehlung",
+  "action_required":  "<Was muss der Entscheider jetzt konkret tun? Max. 200 Zeichen. Wenn nichts: 'Zur Kenntnis nehmen.'>",
+  "affected_roles":   "<Kommagetrennte Rollen die diesen Artikel lesen müssen, max. 3>",
+  "deadline_hint":    "<Konkrete Frist aus dem Artikel z.B. 'Frist: 17.01.2025' — oder null>",
+  "relevance_score":  <Zahl 0–100>,
+  "impact_level":     "<high|medium|low>",
+  "impact_reason":    "<Ein Satz warum dieser Impact-Level, max. 150 Zeichen>",
+  "tags":             ["<tag1>", "<tag2>", "<tag3>"],
+  "is_breaking":      <true|false>
 }`;
 
 // ─── Legacy: separate Summarizer-Prompt (nicht mehr verwendet) ─────────────────

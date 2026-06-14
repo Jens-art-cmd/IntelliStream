@@ -6,7 +6,8 @@
     "start": "tsx src/index.ts",
     "start:dry": "DRY_RUN=true tsx src/index.ts",
     "start:embed": "tsx src/embedder.ts",
-    "start:embed:dry": "DRY_RUN=true tsx src/embedder.ts"
+    "start:embed:dry": "DRY_RUN=true tsx src/embedder.ts",
+    "start:dedup": "tsx src/deduplicator.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",

@@ -20,6 +20,9 @@ export interface CombinedResult {
   summary_short:   string;
   summary_medium:  string;
   summary_long:    string;
+  action_required: string;       // "Was muss ich jetzt tun?"
+  affected_roles:  string;       // "Compliance-Beauftragter, IT-Leiter"
+  deadline_hint:   string | null; // "Frist: 17.01.2025" oder null
   relevance_score: number;
   impact_level:    "high" | "medium" | "low";
   impact_reason:   string;
@@ -55,6 +58,9 @@ export async function processArticleCombined(
     summary_short:   title.slice(0, 120),
     summary_medium:  title,
     summary_long:    title,
+    action_required: "Zur Kenntnis nehmen.",
+    affected_roles:  "",
+    deadline_hint:   null,
     relevance_score: 50,
     impact_level:    "low",
     impact_reason:   "",

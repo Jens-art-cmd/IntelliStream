@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Clock, Users } from "lucide-react";
 import type { ImpactLevel } from "@/types/database";
 import BookmarkButton from "./BookmarkButton";
 import ThumbsButton from "./ThumbsButton";
@@ -20,6 +20,8 @@ interface ArticleCardProps {
     published_at: string | null;
     is_breaking: boolean;
     source_url: string;
+    affected_roles: string | null;
+    deadline_hint: string | null;
   };
   isBookmarked?: boolean;
   industryName?: string;
@@ -106,6 +108,30 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
           <p className="text-xs leading-relaxed line-clamp-2 mb-3" style={{ color: "#57534A" }}>
             {article.summary_medium}
           </p>
+        )}
+
+        {/* Deadline + Affected Roles */}
+        {(article.deadline_hint || article.affected_roles) && (
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            {article.deadline_hint && (
+              <span
+                className="inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.5 rounded-md"
+                style={{ background: "#FEF0EE", color: "#C0392B", border: "1px solid #F5C6C1" }}
+              >
+                <Clock size={10} strokeWidth={2.5} />
+                {article.deadline_hint}
+              </span>
+            )}
+            {article.affected_roles && (
+              <span
+                className="inline-flex items-center gap-1 text-2xs px-2 py-0.5 rounded-md"
+                style={{ background: "#F1EDE4", color: "#57534A", border: "1px solid #E2DDD2" }}
+              >
+                <Users size={10} strokeWidth={2} />
+                {article.affected_roles}
+              </span>
+            )}
+          </div>
         )}
       </div>
 

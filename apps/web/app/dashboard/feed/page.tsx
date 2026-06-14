@@ -102,6 +102,8 @@ export default async function FeedPage() {
     published_at: string | null;
     is_breaking: boolean;
     source_url: string;
+    affected_roles: string | null;
+    deadline_hint: string | null;
   }[] = [];
 
   if (isPersonalized) {
@@ -116,11 +118,11 @@ export default async function FeedPage() {
     if (rpcArticles?.length) {
       // source_url ist nicht im RPC — separater Lookup
       const ids = rpcArticles.map((a: { id: string }) => a.id);
-      const { data: urlRows } = await supabase
+      const { data: extraRows } = await supabase
         .from("articles")
-        .select("id, source_url")
+        .select("id, source_url, affected_roles, deadline_hint")
         .in("id", ids);
-      const urlMap = new Map((urlRows ?? []).map((r: { id: string; source_url: string }) => [r.id, r.source_url]));
+      const extraMap = new Map((extraRows ?? []).map((r: { id: string; source_url: string; affected_roles: string | null; deadline_hint: string | null }) => [r.id, r]));
 
       articles = rpcArticles.map((a: {
         id: string; title: string; summary_short: string | null;
@@ -129,7 +131,9 @@ export default async function FeedPage() {
         published_at: string | null; is_breaking: boolean;
       }) => ({
         ...a,
-        source_url: urlMap.get(a.id) ?? "",
+        source_url:     extraMap.get(a.id)?.source_url     ?? "",
+        affected_roles: extraMap.get(a.id)?.affected_roles ?? null,
+        deadline_hint:  extraMap.get(a.id)?.deadline_hint  ?? null,
       }));
     }
   }
@@ -140,7 +144,7 @@ export default async function FeedPage() {
       effectiveIndustryIds.map((id) =>
         supabase
           .from("articles")
-          .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
+          .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url, affected_roles, deadline_hint")
           .eq("industry_id", id)
           .not("summary_medium", "is", null)
           .eq("is_suppressed", false)
