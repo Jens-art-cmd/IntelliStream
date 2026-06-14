@@ -14,7 +14,8 @@ import { Resend } from "resend";
 const APP_URL    = process.env["APP_URL"] ?? "https://distillfeed.eu";
 const RESEND_FROM = process.env["RESEND_FROM"] ?? "DistillFeed <newsletter@distillfeed.eu>";
 
-function buildWelcomeEmail(email: string): string {
+function buildWelcomeEmail(email: string, name?: string | null): string {
+  const greeting = name ? `Hallo ${name.split(" ")[0]},` : "Hallo,";
   const features = [
     ["KI-Analyse", "Vollständige Zusammenfassungen mit Handlungsempfehlungen"],
     ["Impact-Filter", "Artikel nach Relevanz — Hoch, Mittel, Niedrig"],
@@ -46,9 +47,10 @@ function buildWelcomeEmail(email: string): string {
         <!-- Body -->
         <tr>
           <td style="padding:36px 40px;">
+            <p style="margin:0 0 6px 0;font-size:14px;color:#57534A;line-height:1.7;">${greeting}</p>
             <p style="margin:0 0 20px 0;font-size:14px;color:#57534A;line-height:1.7;">
-              Du hast jetzt <strong style="color:#1A1813;">30 Tage kostenlosen Pro-Zugang</strong> —
-              vollständige KI-Analysen, alle Branchen, personalisierter Feed.
+              du hast jetzt <strong style="color:#1A1813;">14 Tage kostenlosen Pro-Zugang</strong> —
+              vollständige KI-Analysen, alle 15 Branchen, personalisierter Feed.
               Hier ist, was dich erwartet:
             </p>
 
@@ -98,7 +100,7 @@ function buildWelcomeEmail(email: string): string {
           <td style="background:#FAF8F4;border-top:1px solid #E2DDD2;padding:20px 40px;">
             <p style="margin:0;font-size:11px;color:#C8C2B6;line-height:1.5;">
               DistillFeed · <a href="${APP_URL}" style="color:#C8C2B6;">distillfeed.eu</a> ·
-              Fragen? <a href="mailto:hello@distillfeed.eu" style="color:#C8C2B6;">hello@distillfeed.eu</a>
+              Fragen? <a href="mailto:support@distillfeed.eu" style="color:#C8C2B6;">support@distillfeed.eu</a>
             </p>
           </td>
         </tr>
@@ -135,7 +137,7 @@ export async function POST(request: NextRequest) {
   // User laden + Duplikat-Schutz
   const { data: user } = await admin
     .from("users")
-    .select("email, onboarding_email_sent_at")
+    .select("email, name, onboarding_email_sent_at")
     .eq("id", userId)
     .single();
 
@@ -147,8 +149,8 @@ export async function POST(request: NextRequest) {
   const { error: mailErr } = await resend.emails.send({
     from:    RESEND_FROM,
     to:      user.email,
-    subject: "Willkommen bei DistillFeed — dein 30-Tage-Test ist aktiv",
-    html:    buildWelcomeEmail(user.email),
+    subject: "Willkommen bei DistillFeed — dein 14-Tage-Test ist aktiv",
+    html:    buildWelcomeEmail(user.email, user.name),
   });
 
   if (mailErr) {
