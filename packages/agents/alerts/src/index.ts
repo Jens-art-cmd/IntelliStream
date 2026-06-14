@@ -86,72 +86,94 @@ function matchesAlert(article: Article, alert: UserAlert): boolean {
   return alert.keywords.some(kw => searchText.includes(kw.toLowerCase()));
 }
 
+// ── Impact-Farben ────────────────────────────────────────────────────────────
+const IMPACT_DOT: Record<ImpactLevel, string> = {
+  high:   "#DC2626",
+  medium: "#E08900",
+  low:    "#2D7553",
+};
+const IMPACT_LABEL: Record<ImpactLevel, string> = {
+  high:   "Hoher Impact",
+  medium: "Mittlerer Impact",
+  low:    "Geringer Impact",
+};
+
 // ── E-Mail-Template ─────────────────────────────────────────────────────────
 function buildEmailHtml(group: MatchGroup): string {
   const { alert, userName, articles } = group;
-  const greeting = userName ? `Hallo ${userName}` : "Hallo";
-  const articleRows = articles
-    .map(a => `
+  const firstName = userName ? userName.split(" ")[0] : null;
+  const greeting  = firstName ? `Hallo ${firstName},` : "Hallo,";
+
+  const articleRows = articles.map(a => {
+    const dot   = a.impact_level ? IMPACT_DOT[a.impact_level]   : "#C8C2B6";
+    const label = a.impact_level ? IMPACT_LABEL[a.impact_level] : "";
+    const date  = a.published_at
+      ? new Date(a.published_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })
+      : "";
+    return `
       <tr>
-        <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0;">
-          <p style="margin:0 0 4px; font-size:14px; font-weight:600; color:#1a1a1a;">
-            <a href="${APP_URL}/dashboard/article/${a.id}" style="color:#1a1a1a; text-decoration:none;">
-              ${a.title}
-            </a>
+        <td style="padding:12px 0;border-bottom:1px solid #F1EDE4;vertical-align:top;">
+          <p style="margin:0 0 4px 0;font-size:13px;font-weight:700;color:#1A1813;line-height:1.4;">
+            <a href="${APP_URL}/dashboard/article/${a.id}" style="color:#1A1813;text-decoration:none;">${a.title}</a>
           </p>
-          ${a.summary_short ? `<p style="margin:0 0 4px; font-size:13px; color:#555; line-height:1.5;">${a.summary_short}</p>` : ""}
-          <p style="margin:0; font-size:11px; color:#999;">
-            ${a.impact_level === "high" ? "🔴 Hoher Impact" : a.impact_level === "medium" ? "🟡 Mittlerer Impact" : "🟢 Geringer Impact"}
-            ${a.published_at ? " · " + new Date(a.published_at).toLocaleDateString("de-DE") : ""}
-          </p>
+          ${a.summary_short ? `<p style="margin:0 0 6px 0;font-size:12px;color:#57534A;line-height:1.55;">${a.summary_short}</p>` : ""}
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dot};flex-shrink:0;"></span>
+            <span style="font-size:11px;color:#8C887E;">${label}${date ? " · " + date : ""}</span>
+          </div>
         </td>
-      </tr>`)
-    .join("");
+      </tr>`;
+  }).join("");
 
   return `<!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f5f7fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f7fa;padding:32px 16px;">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Alert: ${alert.name}</title></head>
+<body style="margin:0;padding:0;background:#FAF8F4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF8F4;padding:40px 20px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#FFFFFF;border:1px solid #E2DDD2;border-radius:12px;overflow:hidden;max-width:560px;">
 
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#ffca28,#ffb300);padding:24px 32px;">
-            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7a5200;">DistillFeed Alerts</p>
-            <h1 style="margin:4px 0 0;font-size:20px;font-weight:800;color:#1a1a1a;">🔔 ${alert.name}</h1>
+          <td style="background:linear-gradient(135deg,#1A1813 0%,#2D2820 100%);padding:32px 40px;">
+            <p style="margin:0 0 6px 0;font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#FFB300;">DistillFeed · Alert</p>
+            <h1 style="margin:0;font-size:22px;font-weight:300;color:#FFFFFF;letter-spacing:-0.01em;line-height:1.3;">${alert.name}</h1>
           </td>
         </tr>
 
         <!-- Body -->
         <tr>
-          <td style="padding:24px 32px;">
-            <p style="margin:0 0 20px;font-size:14px;color:#555;">
-              ${greeting}, hier sind <strong>${articles.length} neue Treffer</strong> für Ihren Alert.
+          <td style="padding:32px 40px 24px 40px;">
+            <p style="margin:0 0 4px 0;font-size:14px;color:#57534A;line-height:1.7;">${greeting}</p>
+            <p style="margin:0 0 20px 0;font-size:14px;color:#57534A;line-height:1.7;">
+              es gibt <strong style="color:#1A1813;">${articles.length} neue${articles.length === 1 ? "n Treffer" : " Treffer"}</strong> für deinen Alert.
             </p>
+
             <table width="100%" cellpadding="0" cellspacing="0">
               ${articleRows}
             </table>
-          </td>
-        </tr>
 
-        <!-- CTA -->
-        <tr>
-          <td style="padding:0 32px 24px;">
-            <a href="${APP_URL}/dashboard/feed"
-               style="display:inline-block;background:linear-gradient(135deg,#ffca28,#ffb300);color:#1a1a1a;font-size:13px;font-weight:700;padding:10px 24px;border-radius:10px;text-decoration:none;">
-              Zum Feed →
-            </a>
+            <!-- CTA -->
+            <table cellpadding="0" cellspacing="0" style="margin:24px 0 0 0;">
+              <tr>
+                <td style="background:#FFB300;border-radius:8px;">
+                  <a href="${APP_URL}/dashboard/feed"
+                     style="display:inline-block;padding:13px 26px;font-size:13px;font-weight:700;color:#1A1100;text-decoration:none;">
+                    Zum Feed →
+                  </a>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="padding:16px 32px;border-top:1px solid #f0f0f0;">
-            <p style="margin:0;font-size:11px;color:#aaa;">
-              Sie erhalten diese E-Mail, weil Sie den Alert „${alert.name}" in DistillFeed eingerichtet haben.
-              <a href="${APP_URL}/dashboard/alerts" style="color:#aaa;">Alerts verwalten</a>
+          <td style="background:#FAF8F4;border-top:1px solid #E2DDD2;padding:18px 40px;">
+            <p style="margin:0;font-size:11px;color:#C8C2B6;line-height:1.5;">
+              Du erhältst diese Mail, weil du den Alert „${alert.name}" in DistillFeed eingerichtet hast. ·
+              <a href="${APP_URL}/dashboard/alerts" style="color:#C8C2B6;">Alerts verwalten</a>
             </p>
           </td>
         </tr>
@@ -198,7 +220,7 @@ async function main() {
   // 3. Matching — Alerts gegen Artikel prüfen
   const groups: MatchGroup[] = [];
 
-  for (const alert of alerts as (UserAlert & { users: { email: string; name: string | null } })[]) {
+  for (const alert of alerts as unknown as (UserAlert & { users: { email: string; name: string | null } })[]) {
     const matches = (articles as Article[]).filter(a => matchesAlert(a, alert));
     if (matches.length === 0) continue;
 
