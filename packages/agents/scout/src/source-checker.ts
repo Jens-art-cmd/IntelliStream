@@ -103,6 +103,22 @@ async function checkFeedUrl(url: string): Promise<{ ok: boolean; error?: string 
 }
 
 // ---------------------------------------------------------------------------
+// Google News fallback URL builder
+// ---------------------------------------------------------------------------
+
+function buildGoogleNewsFeedUrl(sourceName: string, industryLabel: string): string {
+  // Strip common suffixes like "— Pressemitteilungen", "(Google News)" etc.
+  const cleanName = sourceName
+    .replace(/\s*—\s*.+$/, "")           // remove "— Pressemitteilungen" etc.
+    .replace(/\s*\(.*\)$/, "")           // remove "(Google News)" etc.
+    .trim();
+
+  // Combine source name with industry for better relevance
+  const query = encodeURIComponent(`${cleanName} ${industryLabel}`);
+  return `https://news.google.com/rss/search?q=${query}&hl=de&gl=DE&ceid=DE:de`;
+}
+
+// ---------------------------------------------------------------------------
 // Claude replacement finder
 // ---------------------------------------------------------------------------
 
@@ -291,7 +307,43 @@ async function main(): Promise<void> {
           result.status = "healthy";
           result.url = newUrl;
         } else {
-          console.log(`[HealthChecker]   No valid replacement found — source remains broken`);
+          // ── Google News Fallback ────────────────────────────────────────────
+          // No direct replacement found → insert a Google News RSS source so
+          // the industry never goes dark. The original source is deactivated.
+          const gnewsUrl = buildGoogleNewsFeedUrl(source.name, industryLabel);
+          const gnewsCheck = await checkFeedUrl(gnewsUrl);
+
+          if (gnewsCheck.ok) {
+            // Deactivate the broken original
+            await supabase
+              .from("sources")
+              .update({
+                is_active: false,
+                last_error: `Auto-deactivated: no replacement found, GNews fallback created (${new Date().toISOString().slice(0, 10)})`,
+              })
+              .eq("id", source.id);
+
+            // Insert Google News replacement
+            await supabase.from("sources").insert({
+              name: `${source.name} (Google News)`,
+              url: gnewsUrl,
+              industry_id: source.industry_id,
+              type: "rss",
+              trust_level: "media",
+              is_active: true,
+              consecutive_failures: 0,
+              health_status: "healthy",
+              last_health_check: now,
+              last_error: `Auto-created as GNews fallback for broken source: ${source.url}`,
+            });
+
+            console.log(`[HealthChecker]   GNews fallback created: ${gnewsUrl}`);
+            result.replaced = true;
+            result.status = "healthy";
+            result.url = gnewsUrl;
+          } else {
+            console.log(`[HealthChecker]   No valid replacement found — source remains broken`);
+          }
         }
       }
 

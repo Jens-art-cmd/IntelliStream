@@ -1,0 +1,103 @@
+name: Source Freshness Check
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # Täglich 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  freshness:
+    name: Prüfe ob Quellen neue Artikel liefern
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Freshness prüfen & Alert senden
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          node --input-type=module << 'EOF'
+          const SUPABASE_URL = process.env.SUPABASE_URL;
+          const SUPA_KEY     = process.env.SUPABASE_SERVICE_KEY;
+          const RESEND_KEY   = process.env.RESEND_API_KEY;
+
+          const headers = {
+            "apikey": SUPA_KEY,
+            "Authorization": `Bearer ${SUPA_KEY}`,
+            "Content-Type": "application/json",
+          };
+
+          // 1. Alle aktiven Quellen holen
+          const srcRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/sources?select=id,name,industry_id&is_active=eq.true`,
+            { headers }
+          );
+          const sources = await srcRes.json();
+
+          // 2. Für jede Quelle: gab es in den letzten 26h einen Artikel?
+          const since = new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString();
+
+          const stale = [];
+          for (const src of sources) {
+            const r = await fetch(
+              `${SUPABASE_URL}/rest/v1/articles?select=id&source_id=eq.${src.id}&scraped_at=gte.${since}&limit=1`,
+              { headers }
+            );
+            const articles = await r.json();
+            if (!articles || articles.length === 0) {
+              stale.push(src);
+            }
+          }
+
+          console.log(`Aktive Quellen: ${sources.length}`);
+          console.log(`Ohne neue Artikel (>26h): ${stale.length}`);
+
+          // 3. Alert nur wenn mehr als 10% der Quellen still sind (Schwelle vermeidet False Positives)
+          const threshold = Math.ceil(sources.length * 0.10);
+
+          if (stale.length > threshold && RESEND_KEY) {
+            const list = stale.slice(0, 30)
+              .map(s => `<li>${s.name}</li>`)
+              .join("\n");
+
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                from: "IntelliStream Alerts <alerts@distillfeed.eu>",
+                to: ["koerbe-wellig4m@icloud.com"],
+                subject: `[IntelliStream] ⚠️ ${stale.length} Quellen ohne neue Artikel (>26h)`,
+                html: `
+                  <h2>Freshness Alert — ${new Date().toISOString().slice(0,10)}</h2>
+                  <p><strong>${stale.length} von ${sources.length}</strong> aktiven Quellen haben in den letzten 26 Stunden keine neuen Artikel geliefert.</p>
+                  <ul>${list}${stale.length > 30 ? `<li>… und ${stale.length - 30} weitere</li>` : ""}</ul>
+                  <p>Mögliche Ursachen: Scout-Fehler, Quelle ohne neue Veröffentlichungen, oder Processor-Rückstau.</p>
+                  <p><a href="https://distillfeed.eu/admin/status">Admin → Quellen-Status ansehen →</a></p>
+                `,
+              }),
+            });
+            console.log("Alert-Mail gesendet.");
+          } else {
+            console.log("Alles im grünen Bereich — kein Alert nötig.");
+          }
+          EOF
+
+      - name: Alert bei Workflow-Fehler
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          curl -s -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"from\": \"IntelliStream Alerts <alerts@distillfeed.eu>\",
+              \"to\": [\"koerbe-wellig4m@icloud.com\"],
+              \"subject\": \"[IntelliStream] ⚠️ Freshness-Check fehlgeschlagen\",
+              \"html\": \"<p>Der tägliche Freshness-Check konnte nicht ausgeführt werden.</p><p><a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Logs →</a></p>\"
+            }"

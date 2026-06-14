@@ -128,3 +128,18 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/processor.yml/dispatches \
             -d '{"ref":"main"}'
           echo "Processor-Workflow angestoßen"
+
+      - name: Alert bei Fehler
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          curl -s -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"from\": \"IntelliStream Alerts <alerts@distillfeed.eu>\",
+              \"to\": [\"koerbe-wellig4m@icloud.com\"],
+              \"subject\": \"[IntelliStream] ⚠️ Scout-Workflow fehlgeschlagen\",
+              \"html\": \"<h2>Scout-Workflow Fehler</h2><p>Der Scout-Agent (stündlich) ist fehlgeschlagen.</p><p><a href='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Logs ansehen →</a></p><small>${{ github.run_id }} · $(date -u)</small>\"
+            }"
