@@ -79,7 +79,7 @@ export default function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
 
       <SectionLabel>Konto</SectionLabel>
       <NavLink href="/dashboard/settings"  label="Einstellungen"> <User          size={17} strokeWidth={1.75} /></NavLink>
-      <NavLink href="/kontakt"             label="Support">       <MessageCircle size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/kontakt"    label="Support">       <MessageCircle size={17} strokeWidth={1.75} /></NavLink>
 
       {isAdmin && (
         <>
