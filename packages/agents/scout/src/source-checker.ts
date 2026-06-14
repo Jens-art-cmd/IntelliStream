@@ -50,7 +50,9 @@ const HEAD_TIMEOUT_MS = 10_000;
 const CONTENT_BYTES = 200;
 
 async function checkFeedUrl(url: string): Promise<{ ok: boolean; error?: string }> {
-  // Step 1: HEAD request
+  // Step 1: Optional HEAD request — many servers (esp. German government) reject HEAD
+  // with 400/403 even though GET works fine. We skip HEAD for those and go straight to GET.
+  let headFailed = false;
   try {
     const headRes = await fetch(url, {
       method: "HEAD",
@@ -58,11 +60,18 @@ async function checkFeedUrl(url: string): Promise<{ ok: boolean; error?: string 
       signal: AbortSignal.timeout(HEAD_TIMEOUT_MS),
     });
 
+    // Hard failures: 404/410 = gone, 5xx = server error → skip GET, fail immediately
+    // Soft failures: 400/403/405/415/timeout → server likely doesn't support HEAD, try GET
     if (!headRes.ok) {
-      return { ok: false, error: `HEAD returned HTTP ${headRes.status}` };
+      const softFail = [400, 403, 405, 415].includes(headRes.status);
+      if (!softFail) {
+        return { ok: false, error: `HEAD returned HTTP ${headRes.status}` };
+      }
+      headFailed = true; // proceed to GET anyway
     }
-  } catch (err) {
-    return { ok: false, error: `HEAD failed: ${(err as Error).message}` };
+  } catch {
+    // Network error or timeout on HEAD → try GET anyway
+    headFailed = true;
   }
 
   // Step 2: Fetch first CONTENT_BYTES bytes and verify feed signature
@@ -79,7 +88,7 @@ async function checkFeedUrl(url: string): Promise<{ ok: boolean; error?: string 
 
     const snippet = await getRes.text();
     const lower = snippet.toLowerCase().trimStart();
-    const isFeed = lower.includes("<?xml") || lower.includes("<rss") || lower.includes("<feed");
+    const isFeed = lower.includes("<?xml") || lower.includes("<rss") || lower.includes("<feed") || lower.includes("<atom");
 
     if (!isFeed) {
       return { ok: false, error: "Response does not look like an RSS/Atom feed" };
@@ -87,7 +96,9 @@ async function checkFeedUrl(url: string): Promise<{ ok: boolean; error?: string 
 
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: `Content check failed: ${(err as Error).message}` };
+    const msg = `Content check failed: ${(err as Error).message}`;
+    // If HEAD also failed, report both
+    return { ok: false, error: headFailed ? `HEAD soft-fail + ${msg}` : msg };
   }
 }
 
