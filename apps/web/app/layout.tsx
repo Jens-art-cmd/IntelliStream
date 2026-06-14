@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import CrispWidget from "@/components/CrispWidget";
 
 export const metadata: Metadata = {
   title: {
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="de" suppressHydrationWarning>
       <body className="bg-neutral-25 text-neutral-900 antialiased">
         {children}
+        <CrispWidget />
       </body>
     </html>
   );

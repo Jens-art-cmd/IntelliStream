@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LayoutGrid, Search, Bell, Bookmark, User, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Search, Bell, Bookmark, User, ShieldCheck, MessageCircle } from "lucide-react";
 
 const C = {
   ink: "#1A1813", inkSoft: "#57534A", inkFaint: "#8C887E",
@@ -78,7 +78,8 @@ export default function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
       <NavLink href="/dashboard/bookmarks" label="Lesezeichen">   <Bookmark    size={17} strokeWidth={1.75} /></NavLink>
 
       <SectionLabel>Konto</SectionLabel>
-      <NavLink href="/dashboard/settings"  label="Einstellungen"> <User        size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/dashboard/settings"  label="Einstellungen"> <User          size={17} strokeWidth={1.75} /></NavLink>
+      <NavLink href="/kontakt"             label="Support">       <MessageCircle size={17} strokeWidth={1.75} /></NavLink>
 
       {isAdmin && (
         <>

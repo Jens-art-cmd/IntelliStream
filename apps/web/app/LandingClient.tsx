@@ -741,7 +741,8 @@ export default function LandingClient() {
           <span className="text-[16px] font-semibold" style={{ ...serif, color: C.ink }}>
             Distill<span style={{ color: C.amberDeep }}>Feed</span>
           </span>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap justify-center sm:justify-end">
+            <a href="/kontakt" style={{ color: C.inkFaint }} className="hover:underline underline-offset-2 transition-colors">Kontakt & Support</a>
             <span>DSGVO-konform · EU-Server (Frankfurt)</span>
             <span>© 2026 DistillFeed</span>
           </div>
