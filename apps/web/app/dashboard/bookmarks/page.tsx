@@ -40,12 +40,14 @@ export default async function BookmarksPage() {
     published_at: string | null;
     is_breaking: boolean;
     source_url: string;
+    affected_roles: string | null;
+    deadline_hint: string | null;
   }[] = [];
 
   if (articleIds.length > 0) {
     const { data } = await supabase
       .from("articles")
-      .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url")
+      .select("id, title, summary_short, summary_medium, industry_id, tags, relevance_score, impact_level, published_at, is_breaking, source_url, affected_roles, deadline_hint")
       .in("id", articleIds);
 
     const byId = Object.fromEntries((data ?? []).map((a) => [a.id, a]));

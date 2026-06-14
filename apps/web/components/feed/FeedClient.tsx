@@ -19,6 +19,8 @@ interface Article {
   published_at: string | null;
   is_breaking: boolean;
   source_url: string;
+  affected_roles: string | null;
+  deadline_hint: string | null;
 }
 
 interface Industry {

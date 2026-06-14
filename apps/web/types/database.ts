@@ -41,8 +41,12 @@ type ArticleRow = {
   impact_reason: string | null; trust_score: number | null;
   published_at: string | null; ingested_at: string; processed_at: string | null;
   embedding: number[] | null; language: string; is_breaking: boolean;
-  is_suppressed: boolean;        // migration 016
-  rss_description: string | null; // migration 017
+  is_suppressed:   boolean;          // migration 016
+  rss_description: string | null;    // migration 017
+  action_required: string | null;    // migration 026
+  affected_roles:  string | null;    // migration 026
+  deadline_hint:   string | null;    // migration 026
+  duplicate_group: string | null;    // migration 026
 };
 type ArticleInsert = {
   id?: string; source_url: string; title: string; full_text?: string | null;
@@ -53,6 +57,8 @@ type ArticleInsert = {
   published_at?: string | null; ingested_at?: string; processed_at?: string | null;
   embedding?: number[] | null; language?: string; is_breaking?: boolean;
   is_suppressed?: boolean; rss_description?: string | null;
+  action_required?: string | null; affected_roles?: string | null;
+  deadline_hint?: string | null;   duplicate_group?: string | null;
 };
 
 type UserRow = {
