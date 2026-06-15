@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = { title: "Admin · User · DistillFeed" };
 
 export default async function AdminUsersPage() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   const { data: users } = await supabase
     .from("users")

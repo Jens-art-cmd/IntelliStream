@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { Users, FileText, Mail, TrendingUp } from "lucide-react";
 
 export const metadata: Metadata = { title: "Admin · DistillFeed" };
 
 export default async function AdminPage() {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseAdminClient();
 
   const [
     { data: newsletterStats },
