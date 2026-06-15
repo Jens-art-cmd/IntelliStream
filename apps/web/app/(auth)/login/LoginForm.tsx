@@ -79,7 +79,7 @@ export default function LoginForm() {
         <div>
           <label className="flex items-center justify-between text-xs font-semibold mb-1.5" style={{ color: "#57534A" }}>
             Passwort
-            <a href="#" className="font-medium hover:underline" style={{ color: "#E08900" }}>Vergessen?</a>
+            <Link href="/forgot-password" className="font-medium hover:underline" style={{ color: "#E08900" }}>Vergessen?</Link>
           </label>
           <input
             type="password" required autoComplete="current-password"

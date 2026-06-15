@@ -5,7 +5,9 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type");
-  const next = searchParams.get("next") ?? "/onboarding";
+  // signup → Onboarding, recovery (Passwort-Reset) → /reset-password
+  const defaultNext = type === "recovery" ? "/reset-password" : "/onboarding";
+  const next = searchParams.get("next") ?? defaultNext;
 
   if (token_hash && type) {
     // Create the redirect response first so the cookie setter can attach to it
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
     );
 
     const { data: otpData, error } = await supabase.auth.verifyOtp({
-      type: type as "signup",
+      type: type as "signup" | "recovery" | "email",
       token_hash,
     });
 
