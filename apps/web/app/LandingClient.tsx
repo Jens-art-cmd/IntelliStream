@@ -632,7 +632,7 @@ export default function LandingClient() {
                 ))}
               </ul>
               <a
-                href="mailto:teams@distillfeed.eu?subject=Teams%20S%20Anfrage"
+                href="mailto:support@distillfeed.eu?subject=Teams%20S%20Anfrage"
                 className="block text-center text-[13px] font-semibold py-2.5 rounded-xl transition-colors hover:bg-[#F1EDE4] cursor-pointer"
                 style={{ border: `1px solid ${C.line}`, color: C.ink }}
               >
@@ -662,7 +662,7 @@ export default function LandingClient() {
                 ))}
               </ul>
               <a
-                href="mailto:teams@distillfeed.eu?subject=Teams%20M%20Anfrage"
+                href="mailto:support@distillfeed.eu?subject=Teams%20M%20Anfrage"
                 className="block text-center text-[13px] font-bold py-2.5 rounded-xl transition-all hover:-translate-y-0.5 cursor-pointer"
                 style={{ background: C.amber, color: "#1A1100", boxShadow: "0 4px 14px rgba(224,137,0,0.28)" }}
               >
@@ -688,7 +688,7 @@ export default function LandingClient() {
                 ))}
               </ul>
               <a
-                href="mailto:teams@distillfeed.eu?subject=Enterprise%20Anfrage"
+                href="mailto:support@distillfeed.eu?subject=Enterprise%20Anfrage"
                 className="block text-center text-[13px] font-semibold py-2.5 rounded-xl transition-colors hover:bg-[#F1EDE4] cursor-pointer"
                 style={{ border: `1px solid ${C.line}`, color: C.ink }}
               >
@@ -702,8 +702,8 @@ export default function LandingClient() {
         <Reveal delay={0.1}>
           <p className="text-center text-[13px]" style={{ color: C.inkFaint }}>
             Alle Team-Pläne auf Anfrage via{" "}
-            <a href="mailto:teams@distillfeed.eu" className="font-medium hover:underline" style={{ color: C.amberDeep }}>
-              teams@distillfeed.eu
+            <a href="mailto:support@distillfeed.eu" className="font-medium hover:underline" style={{ color: C.amberDeep }}>
+              support@distillfeed.eu
             </a>
             {" "}— Antwort innerhalb von 24 Stunden.
           </p>

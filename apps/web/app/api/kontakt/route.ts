@@ -92,8 +92,14 @@ export async function POST(request: NextRequest) {
 </body>
 </html>`;
 
+  // FROM muss eine in Resend verifizierte Absender-Domain sein.
+  // support@distillfeed.eu als FROM führt zu 550-Fehler (Domain nicht verifiziert).
+  // Fallback: newsletter@distillfeed.eu (verifiziert via send.distillfeed.eu DNS).
+  // replyTo = Nutzer-E-Mail → direktes Antworten funktioniert trotzdem korrekt.
+  const from = process.env["RESEND_FROM"] ?? "DistillFeed <newsletter@distillfeed.eu>";
+
   const { error: mailError } = await resend.emails.send({
-    from: process.env["RESEND_FROM"] ?? "DistillFeed <no-reply@distillfeed.eu>",
+    from,
     to: ["support@distillfeed.eu"],
     replyTo: email,
     subject: `[Support] ${subject?.trim() || "Neue Anfrage"} — ${name}`,

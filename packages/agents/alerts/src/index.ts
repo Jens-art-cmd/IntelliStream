@@ -73,17 +73,40 @@ function meetsImpact(articleImpact: ImpactLevel | null, minImpact: ImpactLevel):
   return IMPACT_ORDER[articleImpact] >= IMPACT_ORDER[minImpact];
 }
 
-// ── Stichwort-Matching ──────────────────────────────────────────────────────
+// ── Matching ──────────────────────────────────────────────────────────────
+// keywords enthält entweder Industry-IDs als Strings ("4", "6") — neues Format —
+// oder alte Freitext-Keywords. Wir unterstützen beides:
+//   - Wenn keyword nur Ziffern enthält → Industry-ID-Vergleich
+//   - Sonst → Text-Suche in Titel/Summary/Tags (Rückwärtskompatibilität)
 function matchesAlert(article: Article, alert: UserAlert): boolean {
   if (!meetsImpact(article.impact_level, alert.min_impact)) return false;
+  if (alert.keywords.length === 0) return false;
 
-  const searchText = [
-    article.title,
-    article.summary_short ?? "",
-    ...article.tags,
-  ].join(" ").toLowerCase();
+  const isIndustryId = (kw: string) => /^\d+$/.test(kw.trim());
 
-  return alert.keywords.some(kw => searchText.includes(kw.toLowerCase()));
+  const industryKeywords = alert.keywords.filter(isIndustryId);
+  const textKeywords     = alert.keywords.filter(kw => !isIndustryId(kw));
+
+  // Industry-ID Match
+  if (industryKeywords.length > 0) {
+    if (industryKeywords.some(kw => parseInt(kw, 10) === article.industry_id)) {
+      return true;
+    }
+  }
+
+  // Freitext-Match (Legacy-Alerts)
+  if (textKeywords.length > 0) {
+    const searchText = [
+      article.title,
+      article.summary_short ?? "",
+      ...article.tags,
+    ].join(" ").toLowerCase();
+    if (textKeywords.some(kw => searchText.includes(kw.toLowerCase()))) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // ── Impact-Farben ────────────────────────────────────────────────────────────

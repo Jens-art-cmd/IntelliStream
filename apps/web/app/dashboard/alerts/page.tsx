@@ -117,11 +117,28 @@ export default async function AlertsPage() {
   }
 
   // ── Pro-Nutzer: Alert-Manager laden ──────────────────────────────────────
-  const { data: alerts } = await supabase
-    .from("user_alerts")
-    .select("*")
-    .eq("user_id", user!.id)
-    .order("created_at", { ascending: false });
+  const [{ data: alerts }, { data: userData2 }, { data: allIndustries }] = await Promise.all([
+    supabase
+      .from("user_alerts")
+      .select("*")
+      .eq("user_id", user!.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("users")
+      .select("industry_subscriptions")
+      .eq("id", user!.id)
+      .single(),
+    supabase
+      .from("industries")
+      .select("id, name")
+      .eq("is_active", true)
+      .order("name"),
+  ]);
 
-  return <AlertManager initialAlerts={alerts ?? []} />;
+  const subscribedIds: number[] = userData2?.industry_subscriptions ?? [];
+  const industries = (allIndustries ?? []).filter((ind) =>
+    subscribedIds.includes(ind.id)
+  );
+
+  return <AlertManager initialAlerts={alerts ?? []} industries={industries} />;
 }

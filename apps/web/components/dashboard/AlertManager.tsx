@@ -9,13 +9,23 @@ type AlertChannel = "email" | "push" | "both";
 interface Alert {
   id: string;
   name: string;
-  keywords: string[];
+  keywords: string[];   // speichert Industry-IDs als Strings: ["4", "6"]
   companies: string[];
   laws: string[];
   min_impact: ImpactLevel;
   channel: AlertChannel;
   is_active: boolean;
   created_at: string;
+}
+
+interface Industry {
+  id: number;
+  name: string;
+}
+
+interface Props {
+  initialAlerts: Alert[];
+  industries: Industry[];   // abonnierte Branchen des Users
 }
 
 const IMPACT_OPTIONS: { value: ImpactLevel; label: string }[] = [
@@ -33,9 +43,19 @@ const IMPACT_LABEL: Record<ImpactLevel, string> = {
   high: "Nur Hoch", medium: "Mittel+", low: "Alle",
 };
 
-const FORM_INIT = { name: "", keywords: [] as string[], kwInput: "", minImpact: "medium" as ImpactLevel };
+const FORM_INIT = {
+  name:        "",
+  industryIds: [] as number[],
+  minImpact:   "medium" as ImpactLevel,
+};
 
-export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[] }) {
+function industryNamesFor(keywords: string[], industries: Industry[]): string[] {
+  return keywords
+    .map(kw => industries.find(i => String(i.id) === kw)?.name)
+    .filter(Boolean) as string[];
+}
+
+export default function AlertManager({ initialAlerts, industries }: Props) {
   const [alerts, setAlerts]       = useState<Alert[]>(initialAlerts);
   const [showForm, setShowForm]   = useState(false);
   const [form, setForm]           = useState(FORM_INIT);
@@ -43,33 +63,37 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
   const [saving, setSaving]       = useState(false);
   const [busy, setBusy]           = useState<string | null>(null);
 
-  function addKeyword() {
-    const kw = form.kwInput.trim().toLowerCase();
-    if (kw && !form.keywords.includes(kw)) {
-      setForm(f => ({ ...f, keywords: [...f.keywords, kw], kwInput: "" }));
-    } else {
-      setForm(f => ({ ...f, kwInput: "" }));
-    }
-  }
-  function removeKeyword(kw: string) {
-    setForm(f => ({ ...f, keywords: f.keywords.filter(k => k !== kw) }));
+  function toggleIndustry(id: number) {
+    setForm(f => ({
+      ...f,
+      industryIds: f.industryIds.includes(id)
+        ? f.industryIds.filter(i => i !== id)
+        : [...f.industryIds, id],
+    }));
   }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
-    const keywords = form.kwInput.trim()
-      ? [...new Set([...form.keywords, form.kwInput.trim().toLowerCase()])]
-      : form.keywords;
 
-    if (!form.name.trim()) { setFormError("Bitte einen Namen eingeben."); return; }
-    if (keywords.length === 0) { setFormError("Mindestens ein Stichwort ist erforderlich."); return; }
+    if (!form.name.trim())          { setFormError("Bitte einen Namen eingeben."); return; }
+    if (form.industryIds.length === 0) { setFormError("Mindestens eine Branche auswählen."); return; }
+
+    // Industry-IDs als Strings in keywords speichern
+    const keywords = form.industryIds.map(String);
 
     setSaving(true);
     const res = await fetch("/api/alerts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: form.name, keywords, companies: [], laws: [], min_impact: form.minImpact, channel: "email" }),
+      body: JSON.stringify({
+        name:       form.name,
+        keywords,
+        companies:  [],
+        laws:       [],
+        min_impact: form.minImpact,
+        channel:    "email",
+      }),
     });
     setSaving(false);
 
@@ -122,8 +146,7 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
             Meine Alerts
           </h1>
           <p className="text-xs mt-1" style={{ color: "#8C887E" }}>
-            {alerts.filter(a => a.is_active).length} aktive
-            {alerts.filter(a => a.is_active).length !== 1 ? "" : "r"} Alert
+            {alerts.filter(a => a.is_active).length} aktiver Alert
             {alerts.filter(a => a.is_active).length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -148,7 +171,7 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
               Alert erstellen
             </span>
           </div>
-          <form onSubmit={handleCreate} className="space-y-4">
+          <form onSubmit={handleCreate} className="space-y-5">
 
             {formError && (
               <div className="text-xs font-medium rounded-lg px-3.5 py-2.5" style={{ background: "#FEF0EE", border: "1px solid #F5C6C1", color: "#C0392B" }}>
@@ -156,62 +179,63 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
               </div>
             )}
 
+            {/* Name */}
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: "#57534A" }}>Name</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="z.B. Energiepolitik Deutschland"
+                placeholder="z.B. IT-Security täglich"
                 className="fl-input w-full px-3.5 py-2.5 text-sm"
               />
             </div>
 
+            {/* Branche(n) */}
             <div>
-              <label className="block text-xs font-semibold mb-1.5" style={{ color: "#57534A" }}>
-                Stichwörter{" "}
-                <span className="font-normal" style={{ color: "#8C887E" }}>— Enter oder Komma zum Hinzufügen</span>
+              <label className="block text-xs font-semibold mb-2" style={{ color: "#57534A" }}>
+                Branche(n){" "}
+                <span className="font-normal" style={{ color: "#8C887E" }}>— eine oder mehrere auswählen</span>
               </label>
-              <div
-                className="fl-input px-3 py-2 min-h-[44px] flex flex-wrap gap-1.5 items-center cursor-text"
-                onClick={e => (e.currentTarget.querySelector("input") as HTMLInputElement | null)?.focus()}
-              >
-                {form.keywords.map(kw => (
-                  <span
-                    key={kw}
-                    className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
-                    style={{ background: "#FFF6E0", color: "#E08900", border: "1px solid #FFD966" }}
-                  >
-                    {kw}
-                    <button
-                      type="button"
-                      onClick={() => removeKeyword(kw)}
-                      className="leading-none hover:opacity-60 cursor-pointer"
-                      style={{ color: "#E08900" }}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                <input
-                  type="text"
-                  value={form.kwInput}
-                  onChange={e => setForm(f => ({ ...f, kwInput: e.target.value }))}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") { e.preventDefault(); addKeyword(); }
-                    if (e.key === ",")     { e.preventDefault(); addKeyword(); }
-                    if (e.key === "Backspace" && !form.kwInput && form.keywords.length > 0) {
-                      setForm(f => ({ ...f, keywords: f.keywords.slice(0, -1) }));
-                    }
-                  }}
-                  onBlur={addKeyword}
-                  placeholder={form.keywords.length === 0 ? "Photovoltaik, Netzentgelte, EEG…" : ""}
-                  className="flex-1 min-w-[140px] text-sm bg-transparent focus:outline-none py-0.5"
-                  style={{ color: "#1A1813" }}
-                />
-              </div>
+
+              {industries.length === 0 ? (
+                <p className="text-xs" style={{ color: "#8C887E" }}>
+                  Du hast noch keine Branchen abonniert.{" "}
+                  <a href="/dashboard/settings" className="underline" style={{ color: "#E08900" }}>Einstellungen öffnen →</a>
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {industries.map(ind => {
+                    const selected = form.industryIds.includes(ind.id);
+                    return (
+                      <button
+                        key={ind.id}
+                        type="button"
+                        onClick={() => toggleIndustry(ind.id)}
+                        className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-left transition-all duration-150 cursor-pointer"
+                        style={selected
+                          ? { background: "#FFF6E0", border: "1px solid #FFB300", color: "#1A1813" }
+                          : { background: "#FAF8F4", border: "1px solid #E2DDD2", color: "#57534A" }
+                        }
+                      >
+                        <span
+                          className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
+                          style={selected
+                            ? { background: "#FFB300" }
+                            : { background: "#FFFFFF", border: "1px solid #E2DDD2" }
+                          }
+                        >
+                          {selected && <Check size={10} strokeWidth={3} color="#1A1100" />}
+                        </span>
+                        {ind.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
+            {/* Mindest-Impact */}
             <div>
               <label className="block text-xs font-semibold mb-1.5" style={{ color: "#57534A" }}>Mindest-Impact</label>
               <select
@@ -258,7 +282,7 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
           </div>
           <p className="text-sm font-semibold mb-1" style={{ color: "#1A1813" }}>Noch keine Alerts</p>
           <p className="text-xs max-w-xs mx-auto leading-relaxed" style={{ color: "#57534A" }}>
-            Erstelle deinen ersten Alert, um täglich über passende Artikel per E-Mail benachrichtigt zu werden.
+            Erstelle deinen ersten Alert, um täglich per E-Mail über neue Artikel aus deinen Branchen informiert zu werden.
           </p>
         </div>
       )}
@@ -266,79 +290,88 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
       {/* ── Alert-Liste ────────────────────────────────────── */}
       {alerts.length > 0 && (
         <div className="space-y-3">
-          {alerts.map(alert => (
-            <div
-              key={alert.id}
-              className={`rounded-xl px-5 py-4 transition-all ${!alert.is_active ? "opacity-50" : ""}`}
-              style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
-            >
-              <div className="flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <span className="text-sm font-semibold truncate" style={{ color: "#1A1813" }}>
-                      {alert.name}
-                    </span>
-                    <span
-                      className="text-2xs font-semibold px-2 py-0.5 rounded-full"
-                      style={IMPACT_STYLE[alert.min_impact]}
-                    >
-                      {IMPACT_LABEL[alert.min_impact]}
-                    </span>
-                    <span
-                      className="text-2xs px-2 py-0.5 rounded-full"
-                      style={{ color: "#8C887E", border: "1px solid #E2DDD2" }}
-                    >
-                      E-Mail
-                    </span>
-                  </div>
-                  {alert.keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {alert.keywords.map(kw => (
-                        <span
-                          key={kw}
-                          className="text-2xs px-2 py-0.5 rounded-full"
-                          style={{ background: "#FAF8F4", border: "1px solid #E2DDD2", color: "#57534A" }}
-                        >
-                          {kw}
-                        </span>
-                      ))}
+          {alerts.map(alert => {
+            const branchenNames = industryNamesFor(alert.keywords, industries);
+            return (
+              <div
+                key={alert.id}
+                className={`rounded-xl px-5 py-4 transition-all ${!alert.is_active ? "opacity-50" : ""}`}
+                style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                      <span className="text-sm font-semibold truncate" style={{ color: "#1A1813" }}>
+                        {alert.name}
+                      </span>
+                      <span
+                        className="text-2xs font-semibold px-2 py-0.5 rounded-full"
+                        style={IMPACT_STYLE[alert.min_impact]}
+                      >
+                        {IMPACT_LABEL[alert.min_impact]}
+                      </span>
                     </div>
-                  )}
-                </div>
+                    {/* Branchen-Pills */}
+                    {branchenNames.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {branchenNames.map(name => (
+                          <span
+                            key={name}
+                            className="text-2xs px-2 py-0.5 rounded-full"
+                            style={{ background: "#FFF6E0", border: "1px solid #FFD966", color: "#E08900" }}
+                          >
+                            {name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {/* Fallback: alte Keyword-Alerts ohne Branchenbezug */}
+                    {branchenNames.length === 0 && alert.keywords.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {alert.keywords.map(kw => (
+                          <span
+                            key={kw}
+                            className="text-2xs px-2 py-0.5 rounded-full"
+                            style={{ background: "#FAF8F4", border: "1px solid #E2DDD2", color: "#57534A" }}
+                          >
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
-                <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5">
-                  {/* Toggle */}
-                  <button
-                    onClick={() => toggleAlert(alert.id, alert.is_active)}
-                    disabled={busy === alert.id}
-                    aria-label={alert.is_active ? "Deaktivieren" : "Aktivieren"}
-                    className="relative w-9 h-5 rounded-full transition-all flex-shrink-0 disabled:opacity-40 cursor-pointer"
-                    style={alert.is_active ? { background: "#FFB300" } : { background: "#E2DDD2" }}
-                  >
-                    <span
-                      className="absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all"
-                      style={{
-                        background: "#FFFFFF",
-                        left: alert.is_active ? "18px" : "2px",
-                      }}
-                    />
-                  </button>
-                  {/* Löschen */}
-                  <button
-                    onClick={() => deleteAlert(alert.id, alert.name)}
-                    disabled={busy === alert.id}
-                    aria-label="Alert löschen"
-                    className="text-lg leading-none disabled:opacity-40 transition-colors cursor-pointer"
-                    style={{ color: "#C8C2B6" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#C0392B"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#C8C2B6"; }}
-                  >
-                    ×
-                  </button>
+                  <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5">
+                    {/* Toggle */}
+                    <button
+                      onClick={() => toggleAlert(alert.id, alert.is_active)}
+                      disabled={busy === alert.id}
+                      aria-label={alert.is_active ? "Deaktivieren" : "Aktivieren"}
+                      className="relative w-9 h-5 rounded-full transition-all flex-shrink-0 disabled:opacity-40 cursor-pointer"
+                      style={alert.is_active ? { background: "#FFB300" } : { background: "#E2DDD2" }}
+                    >
+                      <span
+                        className="absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all"
+                        style={{ background: "#FFFFFF", left: alert.is_active ? "18px" : "2px" }}
+                      />
+                    </button>
+                    {/* Löschen */}
+                    <button
+                      onClick={() => deleteAlert(alert.id, alert.name)}
+                      disabled={busy === alert.id}
+                      aria-label="Alert löschen"
+                      className="text-lg leading-none disabled:opacity-40 transition-colors cursor-pointer"
+                      style={{ color: "#C8C2B6" }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#C0392B"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#C8C2B6"; }}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -351,9 +384,9 @@ export default function AlertManager({ initialAlerts }: { initialAlerts: Alert[]
           <Check size={14} strokeWidth={2} style={{ color: "#E08900", flexShrink: 0, marginTop: "2px" }} />
           <p className="text-xs leading-relaxed" style={{ color: "#57534A" }}>
             <span className="font-semibold" style={{ color: "#1A1813" }}>Wie funktionieren Alerts?</span>{" "}
-            Täglich um 08:00 Uhr werden neu verarbeitete Artikel gegen deine Stichwörter geprüft.
-            Bei Treffern erhältst du eine E-Mail mit einer Zusammenfassung der passenden Artikel.
-            Alerts können jederzeit pausiert oder gelöscht werden.
+            Täglich um 08:00 Uhr werden neue Artikel aus deinen gewählten Branchen geprüft.
+            Bei Treffern oberhalb deines Impact-Filters erhältst du eine E-Mail.
+            Du kannst Alerts jederzeit pausieren oder löschen.
           </p>
         </div>
       </div>
