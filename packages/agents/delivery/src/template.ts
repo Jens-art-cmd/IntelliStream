@@ -1,6 +1,6 @@
 /**
- * Newsletter HTML-Template
- * Editorial design: cream/amber, like a premium B2B magazine
+ * DistillFeed Weekly Briefing HTML-Template
+ * Editorial design: cream/amber, premium B2B magazine
  */
 
 export interface ArticleItem {
@@ -32,7 +32,7 @@ function formatDate(iso: string | null): string {
   });
 }
 
-function articleCard(a: ArticleItem, appUrl: string): string {
+function articleCard(a: ArticleItem, appUrl: string, rank: number): string {
   const impact = a.impact_level ?? "low";
   return `
     <tr>
@@ -41,15 +41,21 @@ function articleCard(a: ArticleItem, appUrl: string): string {
                style="background:#FFFFFF;border:1px solid #E2DDD2;border-radius:8px;overflow:hidden;">
           <tr>
             <td style="padding:20px 24px;">
-              <!-- Industry + Impact badges -->
+              <!-- Rank + Industry + Impact badges -->
               <table cellpadding="0" cellspacing="0" style="margin:0 0 10px 0;">
                 <tr>
+                  <td style="background:#1A1813;border-radius:20px;padding:3px 10px;
+                              font-size:10px;font-weight:700;color:#FFB300;
+                              letter-spacing:0.1em;">
+                    #${rank}
+                  </td>
+                  <td width="6"></td>
                   <td style="background:#F1EDE4;border-radius:20px;padding:3px 10px;
                               font-size:10px;font-weight:700;color:#57534A;
                               letter-spacing:0.1em;text-transform:uppercase;">
                     ${a.industry_name}
                   </td>
-                  <td width="8"></td>
+                  <td width="6"></td>
                   <td style="background:#FFF6E0;border-radius:20px;padding:3px 10px;
                               font-size:10px;font-weight:700;
                               color:${IMPACT_COLOR[impact]};
@@ -100,7 +106,7 @@ function articleCard(a: ArticleItem, appUrl: string): string {
 export function buildNewsletterHtml(
   articles: ArticleItem[],
   email: string,
-  frequency: "daily" | "weekly",
+  _frequency: "daily" | "weekly",
   appUrl: string,
   unsubscribeUrl: string,
 ): string {
@@ -108,19 +114,14 @@ export function buildNewsletterHtml(
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
-  const frequencyLabel = frequency === "daily" ? "Tägliches Briefing" : "Wöchentliches Briefing";
-  const intro = frequency === "daily"
-    ? "Die wichtigsten Nachrichten aus Ihren Branchen — KI-kuratiert, impact-gewichtet."
-    : "Ihre Wochenzusammenfassung — die bedeutendsten Entwicklungen der letzten 7 Tage.";
-
-  const articleRows = articles.map(a => articleCard(a, appUrl)).join("");
+  const articleRows = articles.map((a, i) => articleCard(a, appUrl, i + 1)).join("");
 
   return `<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${frequencyLabel} – DistillFeed</title>
+  <title>Weekly Briefing – DistillFeed</title>
 </head>
 <body style="margin:0;padding:0;background:#FAF8F4;
              font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
@@ -140,7 +141,7 @@ export function buildNewsletterHtml(
             </p>
             <h1 style="margin:0 0 6px 0;font-size:24px;font-weight:300;
                         color:#FFFFFF;letter-spacing:-0.02em;line-height:1.2;">
-              ${frequencyLabel}
+              Weekly Briefing
             </h1>
             <p style="margin:0;font-size:12px;color:#8C887E;">${today}</p>
           </td>
@@ -151,7 +152,7 @@ export function buildNewsletterHtml(
           <td style="background:#FFB300;padding:14px 40px;">
             <p style="margin:0;font-size:12px;font-weight:600;color:#1A1100;
                       letter-spacing:0.02em;">
-              ${intro}
+              Die ${articles.length} wichtigsten Meldungen aus deinen Branchen — KI-kuratiert, impact-gerankt.
             </p>
           </td>
         </tr>
@@ -175,7 +176,7 @@ export function buildNewsletterHtml(
                      style="display:inline-block;padding:13px 24px;font-size:12px;
                             font-weight:700;color:#FFB300;text-decoration:none;
                             letter-spacing:0.04em;">
-                    Alle Nachrichten im Dashboard →
+                    Alle Meldungen im Dashboard →
                   </a>
                 </td>
               </tr>
@@ -195,8 +196,8 @@ export function buildNewsletterHtml(
           <td style="background:#FAF8F4;border-radius:0 0 12px 12px;
                      padding:20px 40px 32px 40px;">
             <p style="margin:0 0 6px 0;font-size:11px;color:#C8C2B6;line-height:1.5;">
-              Sie erhalten diesen Newsletter weil Sie ihn für
-              <strong style="color:#8C887E;">${email}</strong> abonniert haben.
+              Du erhältst dieses Briefing, weil du es für
+              <strong style="color:#8C887E;">${email}</strong> abonniert hast.
             </p>
             <p style="margin:0;font-size:11px;color:#C8C2B6;line-height:1.5;">
               DistillFeed · distillfeed.eu ·

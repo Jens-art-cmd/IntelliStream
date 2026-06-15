@@ -344,7 +344,7 @@ export default function LandingClient() {
               </p>
               <p className="text-[16px] leading-relaxed" style={{ color: C.inkSoft }}>
                 Und das Entscheidende geht zwischen Pressemitteilungen und
-                Newslettern unter — bis es zu spät ist.
+                täglichen Informationsfluten unter — bis es zu spät ist.
               </p>
             </Reveal>
           </div>
@@ -579,7 +579,7 @@ export default function LandingClient() {
               <p className="text-[13px] mt-3 mb-1" style={{ color: "#C9C3B8" }}>Für Profis mit echtem Informationsbedarf.</p>
               <p className="text-[12.5px] mb-7" style={{ color: C.amber }}>oder 39 € / Monat jährlich (468 € / Jahr)</p>
               <ul className="space-y-3 mb-8 flex-1">
-                {["Alle 15 Branchen", "Unlimitierte Artikel", "KI-Tiefenanalyse je Artikel", "E-Mail-Alerts bei hohem Impact", "Täglicher Newsletter", "Semantische Suche"].map((f) => (
+                {["Alle 15 Branchen", "Unlimitierte Artikel", "KI-Tiefenanalyse je Artikel", "E-Mail-Alerts bei hohem Impact", "Weekly Briefing", "Semantische Suche"].map((f) => (
                   <li key={f} className="flex items-center gap-3 text-[14px]" style={{ color: C.paper }}>
                     <Check size={14} strokeWidth={2.5} color={C.amber} />
                     {f}

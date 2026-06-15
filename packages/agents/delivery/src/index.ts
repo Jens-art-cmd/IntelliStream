@@ -30,8 +30,8 @@ const RESEND_API_KEY       = process.env["RESEND_API_KEY"]!;
 const RESEND_FROM          = process.env["RESEND_FROM"] ?? "DistillFeed <newsletter@distillfeed.eu>";
 const APP_URL              = process.env["APP_URL"] ?? "https://distillfeed.eu";
 const DRY_RUN              = process.env["DRY_RUN"] === "true";
-const FREQUENCY            = (process.env["FREQUENCY"] ?? "daily") as "daily" | "weekly";
-const MAX_ARTICLES         = parseInt(process.env["MAX_ARTICLES"] ?? "12", 10);
+const FREQUENCY            = "weekly" as const;
+const MAX_ARTICLES         = parseInt(process.env["MAX_ARTICLES"] ?? "5", 10);
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error("[Delivery] SUPABASE_URL oder SUPABASE_SERVICE_KEY fehlt");
@@ -167,9 +167,7 @@ async function run() {
       continue;
     }
 
-    const subject = FREQUENCY === "daily"
-      ? `Ihr tägliches Briefing — ${new Date().toLocaleDateString("de-DE", { day: "numeric", month: "long" })}`
-      : `Ihr Wochenbriefing — KW ${getCalendarWeek()}`;
+    const subject = `Dein Weekly Briefing — KW ${getCalendarWeek()}`;
 
     const unsubscribeUrl = `${APP_URL}/api/newsletter/unsubscribe`;
     const html = buildNewsletterHtml(

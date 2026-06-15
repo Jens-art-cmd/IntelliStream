@@ -12,8 +12,8 @@ export const metadata: Metadata = { title: "Einstellungen · DistillFeed" };
 const PRO_FEATURES = [
   "KI-Zusammenfassungen (kurz/mittel/lang)",
   "Alle 15 Branchen gleichzeitig",
-  "Täglicher kuratierter Newsletter",
-  "Stichwort-Alerts per E-Mail",
+  "Weekly Briefing (jeden Montag, Top 5)",
+  "Sofort-Alerts bei kritischen Ereignissen",
   "Relevanz-Scoring & Impact-Filter",
   "Semantische Volltextsuche",
 ];
@@ -263,12 +263,12 @@ export default async function SettingsPage({
           <div className="flex items-center gap-2.5 mb-0.5">
             <span className="block w-4 h-px" style={{ background: "#E08900" }} />
             <span className="text-[9px] font-bold uppercase" style={{ letterSpacing: "0.16em", color: "#8C887E" }}>
-              Newsletter
+              Weekly Briefing
             </span>
           </div>
-          <h2 className="text-sm font-semibold" style={{ color: "#1A1813" }}>Newsletter-Einstellungen</h2>
+          <h2 className="text-sm font-semibold" style={{ color: "#1A1813" }}>Weekly Briefing</h2>
           <p className="text-xs mt-0.5" style={{ color: "#57534A" }}>
-            Täglich oder wöchentlich — die wichtigsten Nachrichten aus Ihren Branchen.
+            Jeden Montag: die Top 5 Meldungen aus deinen Branchen — impact-gerankt. Für Sofort-Benachrichtigungen nutze die Alerts.
           </p>
         </div>
         <div className="px-5 py-4">

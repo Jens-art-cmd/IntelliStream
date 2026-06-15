@@ -9,11 +9,6 @@ const TIME_OPTIONS = [
   { value: "08:00", label: "08:00 Uhr" },
   { value: "09:00", label: "09:00 Uhr" },
   { value: "10:00", label: "10:00 Uhr" },
-  { value: "11:00", label: "11:00 Uhr" },
-  { value: "12:00", label: "12:00 Uhr" },
-  { value: "16:00", label: "16:00 Uhr" },
-  { value: "18:00", label: "18:00 Uhr" },
-  { value: "20:00", label: "20:00 Uhr" },
 ];
 
 interface Props {
@@ -22,9 +17,8 @@ interface Props {
   initialTime?: string;
 }
 
-export default function NewsletterToggle({ initialOptIn, frequency: initialFreq, initialTime = "07:00" }: Props) {
+export default function NewsletterToggle({ initialOptIn, initialTime = "07:00" }: Props) {
   const [optIn, setOptIn]     = useState(initialOptIn);
-  const [freq, setFreq]       = useState(initialFreq);
   const [time, setTime]       = useState(initialTime);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg]         = useState<string | null>(null);
@@ -39,20 +33,18 @@ export default function NewsletterToggle({ initialOptIn, frequency: initialFreq,
     setMsg(null);
     try {
       if (optIn) {
-        // Unsubscribe immediately
         const res = await fetch("/api/newsletter/unsubscribe", { method: "POST" });
         if (res.ok) {
           setOptIn(false);
-          showMsg("Abgemeldet. Sie können sich jederzeit wieder anmelden.");
+          showMsg("Abgemeldet. Du kannst dich jederzeit wieder anmelden.");
         } else {
           showMsg("Fehler beim Abmelden. Bitte erneut versuchen.");
         }
       } else {
-        // Send confirmation email
         const res = await fetch("/api/newsletter/subscribe", { method: "POST" });
         const data = await res.json();
         if (res.ok) {
-          showMsg("Bestätigungs-Mail gesendet — bitte prüfen Sie Ihr Postfach.");
+          showMsg("Bestätigungs-Mail gesendet — bitte prüfe dein Postfach.");
         } else {
           showMsg((data.detail ? `${data.error}: ${data.detail}` : data.error) ?? "Fehler beim Anmelden.");
         }
@@ -62,21 +54,12 @@ export default function NewsletterToggle({ initialOptIn, frequency: initialFreq,
     }
   };
 
-  const handleFrequency = async (newFreq: "daily" | "weekly") => {
-    setFreq(newFreq);
-    await fetch("/api/user/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newsletter_frequency: newFreq }),
-    });
-  };
-
   const handleTime = async (newTime: string) => {
     setTime(newTime);
     await fetch("/api/user/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newsletter_time: newTime }),
+      body: JSON.stringify({ newsletter_frequency: "weekly", newsletter_time: newTime }),
     });
   };
 
@@ -87,12 +70,12 @@ export default function NewsletterToggle({ initialOptIn, frequency: initialFreq,
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium" style={{ color: "#1A1813" }}>
-            Newsletter abonnieren
+            Weekly Briefing abonnieren
           </p>
           <p className="text-xs mt-0.5" style={{ color: "#8C887E" }}>
             {optIn
-              ? "Sie erhalten Ihren personalisierten Newsletter"
-              : "Melden Sie sich an, um kuratierte Branchennews zu erhalten"}
+              ? "Du erhältst jeden Montag dein personalisiertes Briefing"
+              : "Jeden Montag: Top 5 Meldungen aus deinen Branchen — impact-gerankt"}
           </p>
         </div>
 
@@ -101,7 +84,7 @@ export default function NewsletterToggle({ initialOptIn, frequency: initialFreq,
           disabled={loading}
           className="relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-200 cursor-pointer disabled:opacity-60"
           style={{ background: optIn ? "#FFB300" : "#E2DDD2" }}
-          aria-label={optIn ? "Newsletter abmelden" : "Newsletter anmelden"}
+          aria-label={optIn ? "Weekly Briefing abmelden" : "Weekly Briefing anmelden"}
         >
           {loading ? (
             <span className="absolute inset-0 flex items-center justify-center">
@@ -126,56 +109,30 @@ export default function NewsletterToggle({ initialOptIn, frequency: initialFreq,
         </p>
       )}
 
-      {/* Frequency + Time selector — only when opted in */}
+      {/* Delivery time — only when opted in */}
       {optIn && (
-        <div className="space-y-3 pt-1">
-          {/* Frequenz */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-medium flex-shrink-0 w-16" style={{ color: "#8C887E" }}>
-              Frequenz
-            </span>
-            <div className="flex gap-2">
-              {(["daily", "weekly"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => handleFrequency(f)}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer"
-                  style={
-                    freq === f
-                      ? { background: "#FFB300", color: "#1A1100", fontWeight: 600, border: "1px solid #FFB300" }
-                      : { background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2" }
-                  }
-                >
-                  {f === "daily" ? "Täglich" : "Wöchentlich"}
-                </button>
+        <div className="flex items-center gap-3 pt-1">
+          <span className="text-xs font-medium flex-shrink-0 w-20" style={{ color: "#8C887E" }}>
+            Uhrzeit
+          </span>
+          <div className="relative">
+            <select
+              value={time}
+              onChange={(e) => handleTime(e.target.value)}
+              className="text-xs font-medium rounded-full px-3 py-1.5 pr-7 appearance-none cursor-pointer"
+              style={{ background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2", outline: "none" }}
+            >
+              {TIME_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
-            </div>
-          </div>
-
-          {/* Uhrzeit */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-medium flex-shrink-0 w-16" style={{ color: "#8C887E" }}>
-              Uhrzeit
-            </span>
-            <div className="relative">
-              <select
-                value={time}
-                onChange={(e) => handleTime(e.target.value)}
-                className="text-xs font-medium rounded-full px-3 py-1.5 pr-7 appearance-none cursor-pointer"
-                style={{ background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2", outline: "none" }}
-              >
-                {TIME_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: "#8C887E" }}>
-                ▾
-              </span>
-            </div>
-            <span className="text-xs" style={{ color: "#C8C2B6" }}>
-              Wunschuhrzeit (CEST)
+            </select>
+            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: "#8C887E" }}>
+              ▾
             </span>
           </div>
+          <span className="text-xs" style={{ color: "#C8C2B6" }}>
+            montags (CEST)
+          </span>
         </div>
       )}
     </div>
