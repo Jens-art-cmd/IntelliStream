@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { Users, FileText, Mail, TrendingUp } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin · DistillFeed" };
 
 export default async function AdminPage() {

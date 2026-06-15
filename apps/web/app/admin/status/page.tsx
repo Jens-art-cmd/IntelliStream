@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createSupabaseAdminClient } from "@/lib/supabase-server";
 import { ArrowLeft, CheckCircle, AlertTriangle, Clock } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Admin · Status · DistillFeed" };
 
 export default async function AdminStatusPage() {
