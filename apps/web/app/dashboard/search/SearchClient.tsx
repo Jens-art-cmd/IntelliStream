@@ -2,7 +2,8 @@
 
 import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Bookmark, X, Plus } from "lucide-react";
+import type { SavedSearch } from "./page";
 
 interface SearchResult {
   id: string;
@@ -24,7 +25,6 @@ const MODE_OPTIONS: { value: SearchMode; label: string; desc: string }[] = [
   { value: "fulltext", label: "Volltext",    desc: "Exakte Begriffe und Phrasen" },
 ];
 
-// Editorial impact badges
 const IMPACT_STYLE: Record<string, React.CSSProperties> = {
   high:   { background: "#FEF0EE", color: "#C0392B", border: "1px solid #F5C6C1" },
   medium: { background: "#FFF6E0", color: "#E08900", border: "1px solid #FFD966" },
@@ -39,7 +39,11 @@ function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-export default function SearchClient() {
+interface Props {
+  initialSavedSearches?: SavedSearch[];
+}
+
+export default function SearchClient({ initialSavedSearches = [] }: Props) {
   const [query,   setQuery]   = useState("");
   const [mode,    setMode]    = useState<SearchMode>("hybrid");
   const [results, setResults] = useState<SearchResult[] | null>(null);
@@ -47,6 +51,11 @@ export default function SearchClient() {
   const [error,   setError]   = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Saved Searches state
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>(initialSavedSearches);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   async function search(q: string, m: SearchMode) {
     if (!q.trim()) return;
@@ -69,6 +78,42 @@ export default function SearchClient() {
   function handleSubmit(e: React.FormEvent) { e.preventDefault(); search(query, mode); }
   function handleModeChange(m: SearchMode) { setMode(m); if (query.trim()) search(query, m); }
 
+  function applySearch(s: SavedSearch) {
+    setQuery(s.query);
+    search(s.query, mode);
+    inputRef.current?.focus();
+  }
+
+  async function saveSearch() {
+    const name = query.trim().slice(0, 60) || "Gespeicherte Suche";
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/saved-searches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, query: query.trim() }),
+      });
+      const json = await res.json() as { search?: SavedSearch; error?: string };
+      if (!res.ok) {
+        setSaveError(json.error ?? "Fehler beim Speichern");
+      } else if (json.search) {
+        setSavedSearches(prev => [json.search!, ...prev]);
+      }
+    } catch {
+      setSaveError("Netzwerkfehler");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function deleteSearch(id: string) {
+    setSavedSearches(prev => prev.filter(s => s.id !== id));
+    await fetch(`/api/saved-searches/${id}`, { method: "DELETE" });
+  }
+
+  const isAlreadySaved = savedSearches.some(s => s.query.trim() === query.trim());
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-7">
 
@@ -90,6 +135,40 @@ export default function SearchClient() {
           Semantisch oder per Volltext — alle Branchennachrichten auf einmal.
         </p>
       </div>
+
+      {/* ── Saved Searches ───────────────────────────────── */}
+      {savedSearches.length > 0 && (
+        <div className="mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[9px] font-bold uppercase" style={{ letterSpacing: "0.12em", color: "#8C887E" }}>
+              Gespeichert
+            </span>
+            {savedSearches.map(s => (
+              <div
+                key={s.id}
+                className="inline-flex items-center gap-0"
+                style={{ border: "1px solid #E2DDD2", borderRadius: "9999px", background: "#FFFFFF", overflow: "hidden" }}
+              >
+                <button
+                  onClick={() => applySearch(s)}
+                  className="px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors hover:bg-amber-50"
+                  style={{ color: "#57534A" }}
+                >
+                  {s.name}
+                </button>
+                <button
+                  onClick={() => deleteSearch(s.id)}
+                  className="px-2 py-1.5 cursor-pointer transition-colors hover:bg-red-50"
+                  style={{ color: "#C8C2B6", borderLeft: "1px solid #E2DDD2" }}
+                  title="Löschen"
+                >
+                  <X size={10} strokeWidth={2.5} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Search form ──────────────────────────────────── */}
       <div className="rounded-xl p-4 mb-5" style={{ background: "#FFFFFF", border: "1px solid #E2DDD2" }}>
@@ -130,36 +209,65 @@ export default function SearchClient() {
           </button>
         </form>
 
-        {/* Mode selector */}
-        <div className="flex items-center gap-3">
-          <span
-            className="text-[9px] font-bold uppercase flex-shrink-0"
-            style={{ letterSpacing: "0.14em", color: "#8C887E" }}
-          >
-            Modus
-          </span>
-          <div className="flex items-center gap-1">
-            {MODE_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleModeChange(opt.value)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer"
-                style={
-                  mode === opt.value
-                    ? { background: "#1A1813", color: "#F7F5F0" }
-                    : { color: "#57534A" }
-                }
-                onMouseEnter={e => { if (mode !== opt.value) (e.currentTarget as HTMLElement).style.background = "#F1EDE4"; }}
-                onMouseLeave={e => { if (mode !== opt.value) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-              >
-                {opt.label}
-              </button>
-            ))}
+        {/* Mode selector + Save button */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span
+              className="text-[9px] font-bold uppercase flex-shrink-0"
+              style={{ letterSpacing: "0.14em", color: "#8C887E" }}
+            >
+              Modus
+            </span>
+            <div className="flex items-center gap-1">
+              {MODE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleModeChange(opt.value)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer"
+                  style={
+                    mode === opt.value
+                      ? { background: "#1A1813", color: "#F7F5F0" }
+                      : { color: "#57534A" }
+                  }
+                  onMouseEnter={e => { if (mode !== opt.value) (e.currentTarget as HTMLElement).style.background = "#F1EDE4"; }}
+                  onMouseLeave={e => { if (mode !== opt.value) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <span className="text-[11px] hidden sm:block" style={{ color: "#8C887E" }}>
+              {MODE_OPTIONS.find(o => o.value === mode)?.desc}
+            </span>
           </div>
-          <span className="text-[11px] hidden sm:block" style={{ color: "#8C887E" }}>
-            {MODE_OPTIONS.find(o => o.value === mode)?.desc}
-          </span>
+
+          {/* Save search button — nur wenn Suchbegriff vorhanden */}
+          {query.trim() && (
+            <button
+              onClick={saveSearch}
+              disabled={isSaving || isAlreadySaved}
+              title={isAlreadySaved ? "Bereits gespeichert" : "Suche speichern"}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-default"
+              style={
+                isAlreadySaved
+                  ? { background: "#F0F7F0", color: "#2D7553", border: "1px solid #A8D5A8" }
+                  : { background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2" }
+              }
+            >
+              {isAlreadySaved
+                ? <Bookmark size={11} strokeWidth={2} fill="currentColor" />
+                : isSaving
+                  ? <Loader2 size={11} className="animate-spin" />
+                  : <Plus size={11} strokeWidth={2.5} />
+              }
+              {isAlreadySaved ? "Gespeichert" : "Suche speichern"}
+            </button>
+          )}
         </div>
+
+        {saveError && (
+          <p className="text-xs mt-2" style={{ color: "#C0392B" }}>{saveError}</p>
+        )}
       </div>
 
       {/* ── Error ────────────────────────────────────────── */}

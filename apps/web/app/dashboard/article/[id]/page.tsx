@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { getTrialInfo } from "@/lib/trial";
 import BookmarkButton from "@/components/feed/BookmarkButton";
 import ThumbsButton from "@/components/feed/ThumbsButton";
+import ShareButton from "@/components/feed/ShareButton";
 import BackButton from "@/components/ui/BackButton";
 import SimilarArticles from "@/components/feed/SimilarArticles";
 
@@ -90,7 +91,10 @@ export default async function ArticleDetailPage({ params }: Props) {
       {/* ── Back + Bookmark ──────────────────────────────── */}
       <div className="flex items-center justify-between mb-7">
         <BackButton label="Zurück zum Feed" variant="link" />
-        <BookmarkButton articleId={id} initialBookmarked={isBookmarked} size="md" />
+        <div className="flex items-center gap-2">
+          <ShareButton articleId={id} title={article.title} size="md" />
+          <BookmarkButton articleId={id} initialBookmarked={isBookmarked} size="md" />
+        </div>
       </div>
 
       {/* ── Eyebrow + Badges ─────────────────────────────── */}

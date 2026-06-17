@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import ArticleCard from "./ArticleCard";
+import { useReadArticles } from "@/hooks/useReadArticles";
 import type { ImpactLevel } from "@/types/database";
 
 interface Article {
@@ -41,7 +42,6 @@ const IMPACT_OPTIONS: { value: ImpactLevel | "all"; label: string; dot?: string 
   { value: "low",    label: "Gering",  dot: "#2D7553" },
 ];
 
-// Inner component — uses useSearchParams, must be inside <Suspense>
 function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Props) {
   const router    = useRouter();
   const pathname  = usePathname();
@@ -56,6 +56,9 @@ function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Pr
     const n   = raw ? parseInt(raw, 10) : NaN;
     return isNaN(n) ? "all" : n;
   });
+  const [onlyUnread, setOnlyUnread] = useState(false);
+
+  const { readIds, markAsRead, clearAll } = useReadArticles();
 
   const pushParams = useCallback(
     (newImpact: ImpactLevel | "all", newIndustry: number | "all") => {
@@ -70,7 +73,12 @@ function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Pr
 
   const handleImpact   = (val: ImpactLevel | "all") => { setImpact(val);   pushParams(val, industry); };
   const handleIndustry = (val: number | "all")       => { setIndustry(val); pushParams(impact, val); };
-  const resetFilters   = () => { setImpact("all"); setIndustry("all"); router.replace(pathname, { scroll: false }); };
+  const resetFilters   = () => {
+    setImpact("all");
+    setIndustry("all");
+    setOnlyUnread(false);
+    router.replace(pathname, { scroll: false });
+  };
 
   const activeIndustries = useMemo(
     () => industries.filter((ind) => articles.some((a) => a.industry_id === ind.id)),
@@ -81,13 +89,21 @@ function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Pr
     return articles.filter((a) => {
       const impactMatch   = impact   === "all" || a.impact_level === impact;
       const industryMatch = industry === "all" || a.industry_id  === industry;
-      return impactMatch && industryMatch;
+      const unreadMatch   = !onlyUnread || !readIds.has(a.id);
+      return impactMatch && industryMatch && unreadMatch;
     });
-  }, [articles, impact, industry]);
+  }, [articles, impact, industry, onlyUnread, readIds]);
+
+  const readCount = useMemo(
+    () => articles.filter(a => readIds.has(a.id)).length,
+    [articles, readIds],
+  );
 
   const filterBtn = (active: boolean): React.CSSProperties => active
     ? { background: "#FFB300", color: "#1A1100", fontWeight: 600, border: "1px solid #FFB300" }
     : { background: "#FAF8F4", color: "#57534A", border: "1px solid #E2DDD2" };
+
+  const hasActiveFilter = impact !== "all" || industry !== "all" || onlyUnread;
 
   return (
     <div className="space-y-4">
@@ -131,8 +147,6 @@ function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Pr
             >
               Branche
             </span>
-
-            {/* Bis 5 abonnierte Branchen → Pill-Buttons; ab 6 → Dropdown */}
             {industries.length <= 5 ? (
               <div className="flex items-center gap-2 flex-wrap">
                 <button
@@ -174,13 +188,46 @@ function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Pr
             )}
           </div>
         )}
+
+        {/* Read filter */}
+        {readCount > 0 && (
+          <div className="flex items-center gap-3">
+            <span
+              className="text-[9px] font-bold uppercase flex-shrink-0 w-16"
+              style={{ letterSpacing: "0.12em", color: "#8C887E" }}
+            >
+              Status
+            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setOnlyUnread(!onlyUnread)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer"
+                style={filterBtn(onlyUnread)}
+              >
+                Nur ungelesen
+              </button>
+              <button
+                onClick={clearAll}
+                className="px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer"
+                style={{ background: "transparent", color: "#8C887E", border: "none" }}
+              >
+                Alle als ungelesen markieren
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Result count ────────────────────────────────────── */}
       <p className="text-xs font-medium px-1" style={{ color: "#57534A" }}>
         {filtered.length} Artikel
-        {(impact !== "all" || industry !== "all") && (
+        {hasActiveFilter && (
           <span className="ml-1.5" style={{ color: "#C8C2B6" }}>· gefiltert</span>
+        )}
+        {readCount > 0 && !onlyUnread && (
+          <span className="ml-1.5" style={{ color: "#C8C2B6" }}>
+            · {readCount} gelesen
+          </span>
         )}
       </p>
 
@@ -210,7 +257,13 @@ function FeedClientInner({ articles, industries, bookmarkedIds = new Set() }: Pr
       ) : (
         <div className="space-y-3">
           {filtered.map((article) => (
-            <ArticleCard key={article.id} article={article} isBookmarked={bookmarkedIds.has(article.id)} />
+            <ArticleCard
+              key={article.id}
+              article={article}
+              isBookmarked={bookmarkedIds.has(article.id)}
+              isRead={readIds.has(article.id)}
+              onRead={markAsRead}
+            />
           ))}
         </div>
       )}

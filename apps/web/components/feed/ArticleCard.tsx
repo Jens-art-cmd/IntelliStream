@@ -6,6 +6,7 @@ import { ArrowUpRight, Clock, Users } from "lucide-react";
 import type { ImpactLevel } from "@/types/database";
 import BookmarkButton from "./BookmarkButton";
 import ThumbsButton from "./ThumbsButton";
+import ShareButton from "./ShareButton";
 
 interface ArticleCardProps {
   article: {
@@ -25,6 +26,8 @@ interface ArticleCardProps {
   };
   isBookmarked?: boolean;
   industryName?: string;
+  isRead?: boolean;
+  onRead?: (id: string) => void;
 }
 
 const IMPACT_BADGE: Record<ImpactLevel, { label: string; bg: string; text: string; border: string; dot: string }> = {
@@ -33,7 +36,7 @@ const IMPACT_BADGE: Record<ImpactLevel, { label: string; bg: string; text: strin
   low:    { label: "Geringer Impact",  bg: "#F0F7F0", text: "#2D7553", border: "#A8D5A8", dot: "#2D7553" },
 };
 
-export default function ArticleCard({ article, isBookmarked = false, industryName }: ArticleCardProps) {
+export default function ArticleCard({ article, isBookmarked = false, industryName, isRead = false, onRead }: ArticleCardProps) {
   const [titleHovered, setTitleHovered] = useState(false);
 
   const publishedDate = article.published_at
@@ -45,13 +48,28 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
   const impact = article.impact_level ? IMPACT_BADGE[article.impact_level] : null;
   const score  = article.relevance_score != null ? Math.round(article.relevance_score) : null;
 
+  function handleTitleClick() {
+    onRead?.(article.id);
+  }
+
   return (
-    <article className="fl-card group cursor-pointer" style={{ borderRadius: "12px" }}>
+    <article
+      className="fl-card group cursor-pointer"
+      style={{ borderRadius: "12px", opacity: isRead ? 0.65 : 1, transition: "opacity 0.2s" }}
+    >
       <div className="px-5 pt-4 pb-3">
 
         {/* Header row */}
         <div className="flex items-start justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-1.5 flex-wrap">
+            {isRead && (
+              <span
+                className="text-2xs font-medium px-2 py-0.5 rounded-md"
+                style={{ background: "#F1EDE4", color: "#8C887E", border: "1px solid #E2DDD2" }}
+              >
+                Gelesen
+              </span>
+            )}
             {article.is_breaking && (
               <span
                 className="text-2xs font-bold tracking-widest uppercase text-white px-2.5 py-0.5 rounded-md"
@@ -92,7 +110,7 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
         </div>
 
         {/* Title */}
-        <Link href={`/dashboard/article/${article.id}`}>
+        <Link href={`/dashboard/article/${article.id}`} onClick={handleTitleClick}>
           <h2
             className="text-sm font-semibold leading-snug mb-2 tracking-tight transition-colors"
             style={{ color: titleHovered ? "#E08900" : "#1A1813" }}
@@ -151,7 +169,7 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {score != null && (
             <div className="flex items-center gap-1.5">
               <div className="w-10 h-1 rounded-full overflow-hidden" style={{ background: "#E2DDD2" }}>
@@ -174,8 +192,8 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
             </div>
           )}
 
-          {/* Feedback */}
           <ThumbsButton articleId={article.id} size="compact" />
+          <ShareButton articleId={article.id} title={article.title} />
 
           <a
             href={article.source_url}
