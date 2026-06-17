@@ -178,8 +178,10 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
                   style={{
                     width: `${score}%`,
                     background: score >= 70
-                      ? "linear-gradient(90deg, #FFB300, #E08900)"
-                      : "linear-gradient(90deg, #A8A29E, #78716C)",
+                      ? "linear-gradient(90deg, #FFD966, #E08900)"
+                      : score >= 45
+                        ? "linear-gradient(90deg, #D0CCC4, #C07000)"
+                        : "linear-gradient(90deg, #D0CCC4, #8C887E)",
                   }}
                 />
               </div>
