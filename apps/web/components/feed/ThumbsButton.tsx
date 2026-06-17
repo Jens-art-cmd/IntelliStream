@@ -54,26 +54,28 @@ export default function ThumbsButton({ articleId, initialVote = null, size = "co
           disabled={isPending}
           aria-label="Hilfreich"
           title="Hilfreich"
-          className="flex items-center justify-center w-6 h-6 rounded transition-all cursor-pointer disabled:opacity-40"
+          className="flex items-center justify-center w-7 h-7 rounded-lg transition-all cursor-pointer disabled:opacity-40"
           style={{
-            background: vote === "up" ? "#FFF6E0" : "transparent",
-            color: vote === "up" ? "#E08900" : "#C8C2B6",
+            background: vote === "up" ? "#FFF6E0" : "#FAF8F4",
+            border: vote === "up" ? "1px solid #FFD966" : "1px solid #E2DDD2",
+            color: vote === "up" ? "#E08900" : "#8C887E",
           }}
         >
-          <ThumbsUp size={12} strokeWidth={vote === "up" ? 2.5 : 1.75} fill={vote === "up" ? "currentColor" : "none"} />
+          <ThumbsUp size={13} strokeWidth={vote === "up" ? 2.5 : 1.75} fill={vote === "up" ? "currentColor" : "none"} />
         </button>
         <button
           onClick={e => { e.preventDefault(); e.stopPropagation(); handleVote("down"); }}
           disabled={isPending}
           aria-label="Nicht relevant"
           title="Nicht relevant"
-          className="flex items-center justify-center w-6 h-6 rounded transition-all cursor-pointer disabled:opacity-40"
+          className="flex items-center justify-center w-7 h-7 rounded-lg transition-all cursor-pointer disabled:opacity-40"
           style={{
-            background: vote === "down" ? "#FEF0EE" : "transparent",
-            color: vote === "down" ? "#C0392B" : "#C8C2B6",
+            background: vote === "down" ? "#FEF0EE" : "#FAF8F4",
+            border: vote === "down" ? "1px solid #F5C6C1" : "1px solid #E2DDD2",
+            color: vote === "down" ? "#C0392B" : "#8C887E",
           }}
         >
-          <ThumbsDown size={12} strokeWidth={vote === "down" ? 2.5 : 1.75} fill={vote === "down" ? "currentColor" : "none"} />
+          <ThumbsDown size={13} strokeWidth={vote === "down" ? 2.5 : 1.75} fill={vote === "down" ? "currentColor" : "none"} />
         </button>
       </div>
     );

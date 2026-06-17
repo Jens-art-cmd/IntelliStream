@@ -172,20 +172,20 @@ export default function ArticleCard({ article, isBookmarked = false, industryNam
         <div className="flex items-center gap-2">
           {score != null && (
             <div className="flex items-center gap-1.5">
-              <div className="w-10 h-1 rounded-full overflow-hidden" style={{ background: "#E2DDD2" }}>
+              <div className="w-12 h-1.5 rounded-full overflow-hidden" style={{ background: "#D0CCC4" }}>
                 <div
                   className="h-full rounded-full"
                   style={{
                     width: `${score}%`,
                     background: score >= 70
                       ? "linear-gradient(90deg, #FFB300, #E08900)"
-                      : "linear-gradient(90deg, #C8C2B6, #8C887E)",
+                      : "linear-gradient(90deg, #A8A29E, #78716C)",
                   }}
                 />
               </div>
               <span
-                className="text-2xs tabular-nums"
-                style={{ fontFamily: "var(--font-mono), monospace", color: "#8C887E" }}
+                className="text-2xs tabular-nums font-medium"
+                style={{ fontFamily: "var(--font-mono), monospace", color: "#57534A" }}
               >
                 {score}
               </span>
